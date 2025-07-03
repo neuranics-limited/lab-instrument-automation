@@ -11,7 +11,8 @@ offset = 0/1000
 phase = 0
 
 def enable_output(sg, enable=True):
-        sg.write('OUTP ON' if enable else 'OUTP OFF')
+        sg.write('OUTP ON' if enable else 'OUTP OFF')   
+
 
 for sg in [sg1, sg2]:
     sg.write_termination = '\n'

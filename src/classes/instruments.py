@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import pyvisa
 import time 
 
+
 class PowerSupply:
     def __init__(self, address= 'USB0::0x2A8D::0x1002::MY61005055::0::INSTR', timeout= 5000):
         self.rm = pyvisa.ResourceManager()
@@ -74,7 +75,7 @@ class SignalGenerator:
 
 
 
-''''   
+'''
 class SignalGenerator1:
     def __init__(self, address='USB0::0x0957::0x2707::MY62004362::INSTR', timeout=5000, relation = 'primary'):
         self.rm = pyvisa.ResourceManager()
@@ -228,7 +229,7 @@ class SignalGenerator2:
             self.sg.write('OUTP OFF')
 '''
 
-''''
+'''
 class Oscilloscope:
     def __init__(self, address='USB0::0x0000::0x0000::INSTR', timeout=5000):
         self.rm = pyvisa.ResourceManager()
