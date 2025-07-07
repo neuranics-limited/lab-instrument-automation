@@ -48,6 +48,7 @@ class SignalGenerator:
             self.sg.write('TRIG:SOUR EXT')  # External trigger for secondary
 
     def close(self):
+        self.sg.write("OUTP: OFF")
         self.sg.close()
         self.rm.close()
         self.connected = False

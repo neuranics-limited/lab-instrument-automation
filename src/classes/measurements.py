@@ -94,6 +94,10 @@ class signal_gen:
                         self.sg.square(frequency=frequency, amplitude=amplitude, offset=offset, duration=duration)
 
 class double_gen():
+    """
+    """
+    
+    
     def __init__(self, addr_primary, addr_secondary, type_, frequency, amplitude, offset):
         self.primary = SignalGenerator(addr_primary, role='primary')
         self.secondary = SignalGenerator(addr_secondary, role='secondary')
