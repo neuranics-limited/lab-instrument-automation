@@ -2,6 +2,8 @@ numpy
 matplotlib
 pyvisa
 scipy
+re
+os
 
 
 # Note: pyvisa requires a VISA backend (e.g., NI-VISA or Keysight IO Libraries Suite) to be installed separately.
