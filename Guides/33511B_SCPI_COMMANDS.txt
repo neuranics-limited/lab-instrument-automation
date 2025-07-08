@@ -1,0 +1,52 @@
+# Keysight 33511B Trueform Waveform Generator: Common SCPI Commands
+
+## Initialization and Identification
+* `*IDN?` — Query instrument identification
+* `*RST` — Reset instrument
+* `*CLS` — Clear status
+* `SYST:BEEP:STAT OFF` or `SYST:BEEP OFF` — Disable beep
+
+## Reference and Clock
+* `ROSC:SOUR INT` — Use internal reference clock
+* `ROSC:SOUR EXT` — Use external 10 MHz reference
+
+## Output Control
+* `OUTP ON` — Enable output
+* `OUTP OFF` — Disable output
+* `OUTP:TRIG ON` — Set output to triggered mode
+* `OUTP:TRIG OFF` — Set output to continuous mode
+
+## Waveform Setup
+* `APPL:SIN <freq>,<ampl>,<offset>` — Sine wave
+* `APPL:SQU <freq>,<ampl>,<offset>` — Square wave
+* `APPL:RAMP <freq>,<ampl>,<offset>` — Ramp wave
+* `APPL:PULS <freq>,<ampl>,<offset>` — Pulse wave
+* `APPL:NOIS <ampl>,<offset>` — Noise
+* `APPL:DC <ampl>` — DC output
+* `PHAS <deg>` — Set phase in degrees
+* `PHAS:SYNC` — Synchronize phase accumulator
+
+## Triggering
+* `TRIG:SOUR IMM` — Immediate trigger
+* `TRIG:SOUR EXT` — External trigger
+* `TRIG:SOUR BUS` — Software (bus) trigger
+* `*TRG` — Send software trigger
+
+## Burst Mode
+* `BURS:STAT ON` — Enable burst mode
+* `BURS:STAT OFF` — Disable burst mode
+* `BURS:NCYC <n>` — Set number of cycles per burst
+* `BURS:MODE TRIG` — Set burst mode to triggered
+
+## Query and Error Handling
+* `SYST:ERR?` — Query error queue
+* `OUTP?` — Query output state
+* `APPL?` — Query current waveform settings
+
+## Other Useful Commands
+* `VOLT <value>` — Set output voltage (if supported)
+* `CURR <value>` — Set output current (if supported)
+* `DISP:TEXT "<msg>"` — Display message on screen
+
+---
+For a full list and detailed usage, refer to the official Keysight 33511B SCPI Command Reference Guide.

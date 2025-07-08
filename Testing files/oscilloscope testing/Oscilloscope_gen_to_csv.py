@@ -35,8 +35,9 @@ with rm.open_resource(gen_address) as gen:
         print('Arbitrary waveform loaded and outputting.')
     else:
         gen.write('APPL:SIN 2000,0.05,0')  # 2 kHz, 1 Vpp (0.05 V amplitude), 0 V offset
+        gen.write('OUTP ON')
         print('Sine wave outputting.')
-    gen.write('OUTP ON')
+    
 
 
 # Set up oscilloscope and acquire waveform
@@ -48,7 +49,6 @@ with rm.open_resource(osc_address) as osc:
     osc.write(':STOP')
     osc.write(':WAV:FORM ASCii')
     osc.write(':WAV:SOUR CHAN1')
-    #osc.write(':WAV:MODE NORM')
     osc.write(':RUN')
     time.sleep(0.5)
     osc.write(':SING')

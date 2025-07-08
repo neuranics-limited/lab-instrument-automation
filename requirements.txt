@@ -1,6 +1,8 @@
 numpy
 matplotlib
 pyvisa
+pythonnet
+clr
 scipy
 re
 os
@@ -8,3 +10,6 @@ os
 
 # Note: pyvisa requires a VISA backend (e.g., NI-VISA or Keysight IO Libraries Suite) to be installed separately.
 # For a GUI, install Keysight Connection Expert.
+# APx555 does not operate on VISA, so pythonnet is needed to remotely control that instrument.
+# Furthermore .NET SDK has to be installed aswell
+# To generate auto stubs, .NET 6.0 is also needed since .NET is not backwards compatible
