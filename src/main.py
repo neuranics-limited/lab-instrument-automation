@@ -5,12 +5,12 @@ import matplotlib.pyplot as plt
 import pyvisa
 import time
 from classes.instruments import PowerSupply, SignalGenerator
-from classes.measurements import InputOffsetVoltage, signal_gen, double_gen
+from classes.measurements import InputOffsetVoltage, signal_gen, dual_channel
 
 
 
-generator1_address = 'USB0::0x0957::0x2707::MY62004362::INSTR' #secondary generator
-generator2_address = 'USB0::0x0957::0x2707::MY62004397::0::INSTR' #primary generator
+generator1_address = 'USB0::0x0957::0x2807::MY62003816::0::INSTR' 
+generator2_address = 'USB0::0x0957::0x2807::MY62003715::0::INSTR' 
 oscilloscope_address = 'USB0::0x2A8D::0x4704::MY65120148::INSTR' #oscilloscope USB address
 
 
@@ -20,40 +20,18 @@ def main():
     resources = rm.list_resources()
     print("Available resources:", resources)
     
-    test2 = SignalGenerator(generator2_address)
-    #test1 = SignalGenerator(generator1_address)
-
-    test2.sg.write("APPL:SIN 1e5,0.05,0,0")
-    #test1.sg.write("APPL:SIN 1e5,0.05,0,0")
-    test2.sg.write('ROSC:SOUR INT')
-    #test1.sg.write('ROSC:SOUR EXT')
-    test2.sg.write("BURS:MODE TRIG; NCYC 3; PHAS 0")
-    #test1.sg.write("BURS:MODE TRIG; NCYC 3; PHAS 180")
-    test2.sg.write("TRIG:SOUR BUS; SLOP POS")
-    #test1.sg.write("TRIG:SOUR EXT")
-    test2.sg.write("BURS:STAT ON")
-    #test1.sg.write("BURS:STAT ON")
-    test2.sg.write("OUTP 1")
-
-
-    time.sleep(10)
-
-    test2.close()
-    #test1.close()
-
-    #gen = double_gen(addr_primary=generator2_address,
-                    #addr_secondary=generator1_address,
-                    #type_='sin', frequency=1000, amplitude=100, offset=0)
-
-    #gen.show_double()
-    
-    #gen.close()
-
-
-
-
-    
-    
+    while True: 
+        duration = float(input("Enter duration in seconds (0 to exit): "))
+        if duration <= 0:
+            sg1.sg.close()
+            sg2.sg.close()
+            break
+        else:
+            sg1 = dual_channel(generator1_address, type='square', duration=duration)
+            sg2 = dual_channel(generator2_address, type='sin', duration=duration)
+            sg1.show_double()
+            sg2.show_double()
+    rm.close()    
 
 if __name__ == "__main__":
     main()

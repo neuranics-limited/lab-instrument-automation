@@ -23,35 +23,23 @@ class PowerSupply:
         self.connected = False
 
 class SignalGenerator:
-    def __init__(self, address, timeout=5000, role='primary'):
+    def __init__(self, address):
         self.rm = pyvisa.ResourceManager()
         self.sg = self.rm.open_resource(address)
         self.sg.write_termination = '\n'
-        self.sg.timeout = timeout
-        self.connected = True
-        self.role = role
         self.sg.write('*RST')
         self.sg.write('*CLS')
         self.sg.write('SYST:BEEP:STAT OFF') # Disable beeping
         idn = self.sg.query('*IDN?')
         print(f'*IDN? = {idn.rstrip()}')
         self.sg.write('PHAS:SYNC')
+        self.sg.write('ROSC:SOUR INT')  
+        self.sg.write('TRIG:SOUR BUS')  
+        self.sg.write('TRIG:OUTP ON')
 
-
-        # Reference and trigger setup
-        if role == 'primary':
-            self.sg.write('ROSC:SOUR INT')  # Internal reference for primary
-            self.sg.write('TRIG:SOUR BUS')  # Immediate trigger for primary
-            self.sg.write('TRIG:OUTP ON')
-        elif role == 'secondary':
-            self.sg.write('ROSC:SOUR EXT')  # External reference for secondary
-            self.sg.write('TRIG:SOUR EXT')  # External trigger for secondary
 
     def close(self):
-        self.sg.write("OUTP: OFF")
         self.sg.close()
-        self.rm.close()
-        self.connected = False
 
     def sin(self, frequency=1000, amplitude=1.0, offset=0.0, phase=0.0):
         amplitude = amplitude / 1000

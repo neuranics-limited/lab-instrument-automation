@@ -69,9 +69,9 @@ class InputOffsetVoltage:
         self.osc.close()
         self.tc.close()
 
-class signal_gen:
-    def __init__(self):
-        self.sg = SignalGenerator()
+class signal_gen():
+    def __init__(self, address):
+        self.sg = SignalGenerator(address, timeout=5000)
 
     def show_single(self):
         if not self.sg.connected:
@@ -89,71 +89,36 @@ class signal_gen:
                     amplitude = float(input("Enter amplitude in mV: "))
                     offset = float(input("Enter offset in mV: "))
                     if type_== 'sin':
-                        self.sg.sin(frequency=frequency, amplitude=amplitude, offset=offset, duration=duration)
+                        self.sg.sin(frequency=frequency, amplitude=amplitude, offset=offset)
                     elif type_ == 'square':
-                        self.sg.square(frequency=frequency, amplitude=amplitude, offset=offset, duration=duration)
+                        self.sg.square(frequency=frequency, amplitude=amplitude, offset=offset)
+                    time.sleep(duration)
+                    self.sg.sg.write('OUTP OFF')
 
-class double_gen():
-    """
-    """
-    
-    
-    def __init__(self, addr_primary, addr_secondary, type_, frequency, amplitude, offset):
-        self.primary = SignalGenerator(addr_primary, role='primary')
-        self.secondary = SignalGenerator(addr_secondary, role='secondary')
-
-        # Enable burst mode with infinite cycles and triggered mode
-        for sg in [self.primary.sg, self.secondary.sg]:
-            sg.write('BURS:STAT ON')
-            sg.write('BURS:NCYC INF')
-            sg.write('BURS:MODE TRIG')
-
-        # Configure both generators with the same waveform
-        if type_ == 'sin':
-            self.primary.sin(frequency=frequency, amplitude=amplitude, offset=offset, phase=0)
-            # Invert secondary by setting phase=180
-            self.secondary.sin(frequency=frequency, amplitude=amplitude, offset=offset, phase=180)
-        elif type_ == 'square':
-            self.primary.square(frequency=frequency, amplitude=amplitude, offset=offset, phase=0)
-            self.secondary.square(frequency=frequency, amplitude=amplitude, offset=offset, phase=180)
-
-        # Set both to triggered output mode (Keysight 33511B)
-        self.primary.sg.write('OUTP:TRIG ON')
-        self.secondary.sg.write('OUTP:TRIG ON')
-        # Arm both outputs (do not start, just enable)
-        self.primary.enable_output(False)
-        self.secondary.enable_output(False)
-        print("Both generators armed. Ready to trigger output.")
+class dual_channel():
+    def __init__(self, address, type='sin', duration=10):
+        self.sg = SignalGenerator(address)
+        self.type = type.upper()
+        self.duration = duration
 
     def show_double(self):
-        if not self.primary.connected:
-            print("Failed to connect to Signal Generator.")
-            return
-        else:
-            while True:
-                #duration = float(input("Enter duration in seconds (0 to exit): "))
-                duration = 1
-                if duration <= 0:
-                    break
-                else:
-                    # Re-arm both outputs before each trigger
-                    self.primary.sg.write('OUTP:TRIG ON')
-                    self.secondary.sg.write('OUTP:TRIG ON')
-                    self.primary.enable_output(True)
-                    self.secondary.enable_output(True)
-                    self.primary.sg.write('PHAS:SYNC')
-                    self.secondary.sg.write('PHAS:SYNC')
-                    time.sleep(0.1)  # Allow time for outputs to arm
-                    # Trigger only the primary; secondary will follow via EXT TRIG
-                    print("Triggering primary ouput;")
-                    self.primary.sg.write('*TRG')
-                    
-                    time.sleep(duration)
-                    # Disable outputs
-                    self.primary.enable_output(False)
-                    self.secondary.enable_output(False)
-                    
-
-    def close(self):
-        self.primary.close()
-        self.secondary.close()
+        type_ = self.type
+        print(f"For generator {self.sg.sg.resource_name}, type is set to {type_}.")
+        frequency = float(input("Enter frequency in Hz: "))
+        amplitude = float(input("Enter amplitude in mV: "))/1000
+        offset = float(input("Enter offset in mV: "))/1000
+           
+        for num in [1, 2]:
+            self.sg.sg.write(f'SOUR{num}:FUNC {type_}')
+            self.sg.sg.write(f'SOUR{num}:FREQ {frequency}')
+            self.sg.sg.write(f'SOUR{num}:VOLT {amplitude}')
+            self.sg.sg.write(f'SOUR{num}:VOLT:OFFS {offset}')
+        self.sg.sg.write('SOUR1:PHAS 0')
+        self.sg.sg.write('SOUR2:PHAS 180')
+        self.sg.sg.write('PHAS:SYNC')
+            
+        for num in [1, 2]:
+            self.sg.sg.write(f'OUTP{num} ON')
+        time.sleep(self.duration)
+        for num in [1, 2]:
+            self.sg.sg.write(f'OUTP{num} OFF')
