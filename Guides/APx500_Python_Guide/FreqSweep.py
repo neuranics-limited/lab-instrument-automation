@@ -15,20 +15,23 @@ APx.Visible = True
 APx.CreateNewProject()
 
 # Configure for noise measurement
+APx.SignalPathSetup.OutputConnector.Type = OutputConnectorType.AnalogBalanced
 APx.SignalPathSetup.InputConnector.Type = InputConnectorType.AnalogBalanced
 APx.SignalPathSetup.Measure = MeasurandType.Voltage
-
 # Set up input channel for sensor
 input1 = APx.SignalPathSetup.InputSettings(APxInputSelection.Input1)
 input1.Channels[0].Name = "Sensor"
 
+
 # Add SIGNAL ANALYZER measurement for noise analysis (not FrequencyResponse)
-APx.AddMeasurement("Signal Path1", MeasurementType.SignalAnalyzer)
+APx.AddMeasurement("Signal Path1", MeasurementType.NoiseRecorder)  # INoiseRecorderMeasurement
+
+APx.NoiseRecorder.Generator.
 
 # Configure signal analyzer for noise measurement
-APx.SignalAnalyzer.FrequencySpan.Value = 1000.0  # 1 kHz span
-APx.SignalAnalyzer.StartFrequency.Value = 1.0    # Start at 1 Hz
-APx.SignalAnalyzer.AverageCount = 10             # Average for noise reduction
+APx.NoiseRecorder.FrequencySpan.Value = 1000.0  # 1 kHz span
+APx.NoiseRecorder.StartFrequency.Value = 1.0    # Start at 1 Hz
+
 
 # DISABLE generator - we want to measure noise, not response
 APx.Generator.OutputEnabled = False

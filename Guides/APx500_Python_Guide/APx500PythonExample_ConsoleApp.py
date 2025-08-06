@@ -24,8 +24,10 @@ input1.Channels[0].Sensitivity.Value = 0.011
 APx.AddMeasurement("Signal Path1", MeasurementType.AcousticResponse)
 APx.AcousticResponse.GeneratorWithPilot.Frequencies.Start.Value = 100;
 APx.AcousticResponse.GeneratorWithPilot.Frequencies.Stop.Value = 10000;
+APx.AcousticResponse.GeneratorWithPilot.Levels.Sweep.SetValue(OutputChannelIndex.Ch1, "1 Vrms");
 APx.AcousticResponse.GeneratorWithPilot.Durations.Sweep.Value = 1;
-        
+
+
 #Check a couple results to be included in the active sequence
 APx.AcousticResponse.Phase.Checked = True
 APx.AcousticResponse.ThdRatio.Checked = True
