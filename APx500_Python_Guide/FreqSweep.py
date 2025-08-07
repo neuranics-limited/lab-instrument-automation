@@ -24,13 +24,14 @@ input1.Channels[0].Name = "Sensor"
 
 
 # Add SIGNAL ANALYZER measurement for noise analysis (not FrequencyResponse)
-APx.AddMeasurement("Signal Path1", MeasurementType.NoiseRecorder)  # INoiseRecorderMeasurement
+APx.AddMeasurement("Signal Path1", MeasurementType.SignalAnalyzer)  # INoiseRecorderMeasurement
 
-APx.NoiseRecorder.Generator.
+APx.SignalAnalyzer.GeneratorWithPilot.Frequencies.Start.Value = 10.0  # Start at 10 Hz
+
 
 # Configure signal analyzer for noise measurement
-APx.NoiseRecorder.FrequencySpan.Value = 1000.0  # 1 kHz span
-APx.NoiseRecorder.StartFrequency.Value = 1.0    # Start at 1 Hz
+APx.SignalAnalyzer.FrequencySpan.Value = 1000.0  # 1 kHz span
+APx.SignalAnalyzer.StartFrequency.Value = 1.0    # Start at 1 Hz
 
 
 # DISABLE generator - we want to measure noise, not response
