@@ -15,8 +15,8 @@ APx.Visible = True
 APx.CreateNewProject()
 
 # Configure for noise measurement
-APx.SignalPathSetup.OutputConnector.Type = OutputConnectorType.AnalogBalanced
 APx.SignalPathSetup.InputConnector.Type = InputConnectorType.AnalogBalanced
+APx.SignalPathSetup.OutputConnector.Type = OutputConnectorType.AnalogBalanced
 APx.SignalPathSetup.Measure = MeasurandType.Voltage
 # Set up input channel for sensor
 input1 = APx.SignalPathSetup.InputSettings(APxInputSelection.Input1)
@@ -25,20 +25,16 @@ input1.Channels[0].Name = "Sensor"
 
 # Add SIGNAL ANALYZER measurement for noise analysis (not FrequencyResponse)
 APx.AddMeasurement("Signal Path1", MeasurementType.SignalAnalyzer)  # INoiseRecorderMeasurement
+APx.SignalAnalyzer.AcquisitionSeconds = 5.0 # Set acquisition time
+APx.SignalAnalyzer.AcquisitionType = AcqLengthType.Seconds  # or .Auto
+APx.SignalAnalyzer.Averages = 10  # Set number of averages for noise reduction
 
-APx.SignalAnalyzer.GeneratorWithPilot.Frequencies.Start.Value = 10.0  # Start at 10 Hz
-
-
-# Configure signal analyzer for noise measurement
-APx.SignalAnalyzer.FrequencySpan.Value = 1000.0  # 1 kHz span
-APx.SignalAnalyzer.StartFrequency.Value = 1.0    # Start at 1 Hz
-
-
-# DISABLE generator - we want to measure noise, not response
-APx.Generator.OutputEnabled = False
+APx.SignalAnalyzer.AnalogInputBandwidth = SignalAnalyzerBandwidthType.Bw20k44kHz  # Example: 20 kHz to 44 kHz bandwidth, check your API for available enums
 
 # Enable voltage noise density result
-APx.SignalAnalyzer.Results[MeasurementResultType.VoltageNoiseDensity].Enabled = True
+APx.SignalAnalyzer[MeasurementResultType.AmplitudeSpectralDensity].Enabled = True
+
+# (Optional) Set up export if you want Excel output, but not needed for plotting
 
 print("Starting voltage noise density measurement...")
 
@@ -47,12 +43,15 @@ APx.Sequence.Run()
 
 # Wait for completion
 while APx.Sequence.IsRunning:
+    print("Waiting for measurement to complete...")
     time.sleep(0.1)
 
-# Get noise density results
-noise_result = APx.Sequence[0]["Signal Analyzer"].SequenceResults[MeasurementResultType.VoltageNoiseDensity]
+
+noise_result = APx.SignalAnalyzer[MeasurementResultType.AmplitudeSpectralDensity]
 frequencies = list(noise_result.GetXValues(InputChannelIndex.Ch1, VerticalAxis.Left, SourceDataType.Measured, 1))
 noise_levels = list(noise_result.GetYValues(InputChannelIndex.Ch1, VerticalAxis.Left, SourceDataType.Measured, 1))
+
+
 
 # Plot results
 plt.figure(figsize=(10, 6))
