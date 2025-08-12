@@ -35,6 +35,7 @@ class dual_channel():
         self.sg = SignalGenerator(address)
         self.type = type.upper()
         self.duration = duration
+        
 
     def show_double(self):
         type_ = self.type
@@ -51,7 +52,7 @@ class dual_channel():
         self.sg.sg.write('SOUR1:PHAS 0')
         self.sg.sg.write('SOUR2:PHAS 180')
         self.sg.sg.write('PHAS:SYNC')
-            
+
         for num in [1, 2]:
             self.sg.sg.write(f'OUTP{num} ON')
         time.sleep(self.duration)

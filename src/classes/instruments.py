@@ -12,6 +12,7 @@ class PowerSupply:
         self.connected = True
         self.ps.write('*RST')
         self.ps.write('*CLS')
+        self.ps.write('OUTP:LOAD INF')
         
         '''
         idn = self.ps.query('*IDN?')
@@ -32,12 +33,12 @@ class SignalGenerator:
         self.sg.write('*RST')
         self.sg.write('*CLS')
         self.sg.write('SYST:BEEP:STAT OFF') # Disable beeping
-        idn = self.sg.query('*IDN?')
-        print(f'*IDN? = {idn.rstrip()}')
+        #self.sg.write('OUTP:LOAD INF')
         self.sg.write('PHAS:SYNC')
         self.sg.write('ROSC:SOUR INT')  
         self.sg.write('TRIG:SOUR BUS')  
-        self.sg.write('TRIG:OUTP ON')
+        self.sg.write(f'OUTP1:LOAD INF')
+        self.sg.write(f'OUTP2:LOAD INF')
 
     def close(self):
         self.sg.close()
