@@ -4,8 +4,8 @@ pyvisa
 pythonnet
 clr
 scipy
-re
-os
+threading
+tkinter
 
 
 # Note: pyvisa requires a VISA backend (e.g., NI-VISA or Keysight IO Libraries Suite) to be installed separately.

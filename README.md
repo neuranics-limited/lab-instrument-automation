@@ -1,45 +1,106 @@
-# SCPI Framework
+# Lab Instrument Automation
 
-## Overview
-The SCPI Framework is a Python-based library for automating the measurement of analog ASIC parameters using SCPI-compliant lab instruments connected via USB. It provides an object-oriented interface to control power supplies, oscilloscopes, spectrum analyzers, and temperature chambers for tasks such as measuring input offset voltage (`InputOffsetVoltage`), input offset voltage drift (`InputOffsetVoltage_drift`), and input bias current (`InputBiasCurrent`).
+A modern Python desktop application for automating laboratory instruments, featuring a user-friendly GUI built with Tkinter. Supports Keysight 33500B signal generator and E36311A power supply, with robust SCPI command integration and advanced usability features.
 
 ## Features
-- **USB Instrument Management**: Connect to SCPI instruments over USB using PyVISA.
-- **Automated Measurements**: Measure analog ASIC parameters (`V_os`, `V_os_drift`, `I_B`) with statistical analysis.
-- **Statistical Definitions**: "Typical" values are calculated as the 68th percentile (mean + 0.47 × std) of the measured distribution.
-- **Temperature Chamber Integration**: Automate temperature-dependent measurements.
-- **Extensible Architecture**: Easily add new instruments and measurement routines.
 
-## Installation
-To install the required dependencies, run:
+- **Graphical User Interface (GUI):**
+    - Tkinter-based, clean and modern design
+    - Main menu for switching between instrument panels
+    - All instrument controls via GUI (no console input required)
+
+- **Power Supply Control (E36311A):**
+    - Set voltage, current, and duration
+    - Live countdown and status bar
+    - Start/stop buttons always visible
+    - Model number displayed in window title
+
+- **Signal Generator Control (33500B):**
+    - Dual-channel output with independent settings
+    - Input Type: Sin, Square, DC
+    - For DC: only offset is used as output voltage; Peak-to-Peak Voltage and phase mode are disabled
+    - For Sin/Square: set frequency, peak-to-peak voltage, offset, and phase mode
+    - Phase Mode: In-phase or Antiphase
+    - Clock generator (second instrument) with enable/disable option
+    - All controls always visible
+    - Model number displayed in window title
+
+- **Instrument Communication:**
+    - Uses PyVISA for USB communication
+    - Robust SCPI command handling
+    - Correct High-Z output configuration
+
+- **Threaded Operation:**
+    - Parallel control of signal and clock generators
+    - Responsive GUI during instrument operation
+
+## Screenshots
+
+> Add screenshots of the Power Supply and Signal Generator GUIs here for best effect.
+
+## Quick Start
+
+1. **Install Requirements:**
+     ```powershell
+     pip install -r requirements.txt
+     ```
+
+2. **Connect Instruments:**
+     - Plug in Keysight 33500B and E36311A via USB
+     - Confirm VISA addresses in `main.py` match your devices
+
+3. **Run the Application:**
+     ```powershell
+     python src/main.py
+     ```
+
+4. **Use the GUI:**
+     - Select instrument panel from the main menu
+     - Enter desired parameters and start/stop outputs
+
+## File Structure
 
 ```
-pip install -r requirements.txt
+lab-instrument-automation/
+├── README.md
+├── requirements.txt
+├── online_code.py
+├── src/
+│   ├── main.py
+│   ├── GeneratorsSync_testing.py
+│   ├── PowerSupply_testing.py
+│   └── classes/
+│       ├── __init__.py
+│       ├── instruments.py
+│       ├── measurements.py
+│       ├── Trial_classes.py
+│       └── Measurements_howto
 ```
 
-## Usage
-1. **Connect Instruments via USB**: Ensure your instruments are connected via USB and note their VISA addresses (e.g., `USB0::0x1234::0x5678::INSTR`).
-2. **Configure Measurement Classes**: Instantiate measurement classes (`InputOffsetVoltage`, `InputOffsetVoltage_drift`, `InputBiasCurrent`) with the correct USB addresses if needed.
-3. **Run Measurements**: Use the provided methods to automate measurements. Example:
+## Instrument Support
 
-```python
-from classes.measurements import InputOffsetVoltage
-vos = InputOffsetVoltage(gain=10)
-vos.measure(voltages=[0.0, 0.0, 0.0, 0.0, 0.0], 
-            currents=[1.2, 1.2, 1.2, 1.2, 1.2], 
-            dwells = [3.0, 1.5, 1.0, 1.5, 3.0])
-vos.close()
-```
-4. **Read The Ouput CSV File**: The methods should create a CSV file in the same directory
+- **Keysight 33500B Signal Generator**
+    - Dual-channel, phase control, waveform selection
+- **Keysight E36311A Power Supply**
+    - Voltage/current/time control, live status
 
-## Notes
-- Replace the USB VISA addresses in the instrument classes if your instruments use different addresses.
-- Use `pyvisa.ResourceManager().list_resources()` to discover connected devices.
-- The framework uses PyVISA for instrument communication and NumPy for statistical calculations. Any graphs will be created using matplotlib.pyplot.
-- "Typical" values are defined as the 68th percentile (mean + 0.47 × std) for normal distributions.
+## Advanced Usability
 
-## Contributing
-Contributions are welcome! Please feel free to submit a pull request or open an issue for any enhancements or bug fixes.
+- All controls are always visible and never recreated dynamically
+- Input fields are enabled/disabled contextually (e.g., DC disables peak-to-peak voltage)
+- Robust error handling and status feedback
+- Modern, visually separated input sections
+
+## Requirements
+
+- Python 3.8+
+- PyVISA
+- Tkinter (standard with Python)
 
 ## License
-""I don't know what to put in here, any inputs would be greatly appreciated""
+
+MIT License
+
+---
+
+For questions or contributions, please contact the repository owner or open an issue.
