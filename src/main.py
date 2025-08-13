@@ -33,7 +33,6 @@ def initialize_instruments():
 
 
 
-
 class PowerSupplyGUI:
     def __init__(self, master):
         self.master = master
@@ -133,7 +132,6 @@ class PowerSupplyGUI:
         self.current_entry.delete(0, tk.END)
         self.time_entry.delete(0, tk.END)
         self.status.set("Output OFF.")
-
 
 
 class SignalGeneratorGUI:
@@ -281,6 +279,7 @@ class SignalGeneratorGUI:
             self.sg.sg.write('PHAS:SYNC')
             for num in [1, 2]:
                 self.sg.sg.write(f'OUTP{num} ON')
+            self.sg.sg.write('PHAS:SYNC')
             time.sleep(self.duration)
             # Only send OFF if not stopped
             if not getattr(self, '_stop_generators', False):
@@ -309,6 +308,7 @@ class SignalGeneratorGUI:
                 self.sg.sg.write('PHAS:SYNC')
                 for num in [1, 2]:
                     self.sg.sg.write(f'OUTP{num} ON')
+                self.sg.sg.write('PHAS:SYNC')
                 time.sleep(self.duration)
                 # Only send OFF if not stopped
                 if not getattr(self, '_stop_generators', False):
