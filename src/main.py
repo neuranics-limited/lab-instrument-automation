@@ -64,8 +64,8 @@ class PowerSupplyGUI:
         frame = ttk.Frame(master, padding=20, style='TFrame')
         frame.pack(padx=30, pady=30)
 
-        # Title label
-        title = ttk.Label(frame, text="Power Supply Control", font=("Segoe UI", 18, "bold"), background="#ffffff")
+        # Title label with model number
+        title = ttk.Label(frame, text="Power Supply Control (E36311A)", font=("Segoe UI", 18, "bold"), background="#ffffff")
         title.grid(row=0, column=0, columnspan=2, pady=(0, 18))
 
         # Voltage
@@ -161,7 +161,8 @@ class SignalGeneratorGUI:
         frame = ttk.Frame(master, padding=20, style='TFrame')
         frame.pack(padx=30, pady=30)
 
-        title = ttk.Label(frame, text="Signal Generator Control", font=("Segoe UI", 18, "bold"), background="#ffffff")
+        # Title label with model number
+        title = ttk.Label(frame, text="Signal Generator Control (33500B)", font=("Segoe UI", 18, "bold"), background="#ffffff")
         title.grid(row=0, column=0, columnspan=2, pady=(0, 18))
 
 
@@ -173,26 +174,38 @@ class SignalGeneratorGUI:
         sg_frame = ttk.LabelFrame(h_frame, text="Signal Generator", padding=12, style='TFrame')
         sg_frame.grid(row=0, column=0, sticky='n', padx=(0, 16), pady=0)
 
-        ttk.Label(sg_frame, text="Duration (s):").grid(row=0, column=0, sticky='e', padx=10, pady=7)
-        self.duration_entry = ttk.Entry(sg_frame, font=("Segoe UI", 12), width=14)
-        self.duration_entry.grid(row=0, column=1, padx=10, pady=7)
 
-        ttk.Label(sg_frame, text="Frequency (Hz):").grid(row=1, column=0, sticky='e', padx=10, pady=7)
-        self.frequency_entry = ttk.Entry(sg_frame, font=("Segoe UI", 12), width=14)
-        self.frequency_entry.grid(row=1, column=1, padx=10, pady=7)
-
-        ttk.Label(sg_frame, text="Amplitude (mV):").grid(row=2, column=0, sticky='e', padx=10, pady=7)
-        self.amplitude_entry = ttk.Entry(sg_frame, font=("Segoe UI", 12), width=14)
-        self.amplitude_entry.grid(row=2, column=1, padx=10, pady=7)
-
-        ttk.Label(sg_frame, text="Offset (mV):").grid(row=3, column=0, sticky='e', padx=10, pady=7)
-        self.offset_entry = ttk.Entry(sg_frame, font=("Segoe UI", 12), width=14)
-        self.offset_entry.grid(row=3, column=1, padx=10, pady=7)
-
-        ttk.Label(sg_frame, text="Input Type:").grid(row=4, column=0, sticky='e', padx=10, pady=7)
+        # Input Type (row 0)
+        ttk.Label(sg_frame, text="Input Type:").grid(row=0, column=0, sticky='e', padx=10, pady=7)
         self.input_type = tk.StringVar(value='sin')
-        input_type_menu = ttk.Combobox(sg_frame, textvariable=self.input_type, values=['sin', 'square'], font=("Segoe UI", 12), width=12, state='readonly')
-        input_type_menu.grid(row=4, column=1, padx=10, pady=7)
+        input_type_menu = ttk.Combobox(sg_frame, textvariable=self.input_type, values=['sin', 'square', 'DC'], font=("Segoe UI", 12), width=12, state='readonly')
+        input_type_menu.grid(row=0, column=1, padx=10, pady=7)
+
+        # Phase Mode (row 1)
+        ttk.Label(sg_frame, text="Phase Mode:").grid(row=1, column=0, sticky='e', padx=10, pady=7)
+        self.phase_mode = tk.StringVar(value='Antiphase')
+        phase_mode_menu = ttk.Combobox(sg_frame, textvariable=self.phase_mode, values=['Antiphase', 'In-phase'], font=("Segoe UI", 12), width=12, state='readonly')
+        phase_mode_menu.grid(row=1, column=1, padx=10, pady=7)
+
+        # Duration (row 2)
+        ttk.Label(sg_frame, text="Duration (s):").grid(row=2, column=0, sticky='e', padx=10, pady=7)
+        self.duration_entry = ttk.Entry(sg_frame, font=("Segoe UI", 12), width=14)
+        self.duration_entry.grid(row=2, column=1, padx=10, pady=7)
+
+        # Frequency (row 3)
+        ttk.Label(sg_frame, text="Frequency (Hz):").grid(row=3, column=0, sticky='e', padx=10, pady=7)
+        self.frequency_entry = ttk.Entry(sg_frame, font=("Segoe UI", 12), width=14)
+        self.frequency_entry.grid(row=3, column=1, padx=10, pady=7)
+
+        # Amplitude (row 4)
+        ttk.Label(sg_frame, text="Peak-to-Peak Voltage (mV):").grid(row=4, column=0, sticky='e', padx=10, pady=7)
+        self.amplitude_entry = ttk.Entry(sg_frame, font=("Segoe UI", 12), width=14)
+        self.amplitude_entry.grid(row=4, column=1, padx=10, pady=7)
+
+        # Offset (row 5)
+        ttk.Label(sg_frame, text="Offset (mV):").grid(row=5, column=0, sticky='e', padx=10, pady=7)
+        self.offset_entry = ttk.Entry(sg_frame, font=("Segoe UI", 12), width=14)
+        self.offset_entry.grid(row=5, column=1, padx=10, pady=7)
 
         # Clock Generator section (right)
         clock_frame = ttk.LabelFrame(h_frame, text="Clock Generator", padding=12, style='TFrame')
@@ -240,19 +253,45 @@ class SignalGeneratorGUI:
         # Set initial state of clock fields
         self._toggle_clock_fields()
 
+        # Store references to signal fields for toggling
+        self.signal_fields = [self.frequency_entry, self.offset_entry, phase_mode_menu]
+        input_type_menu.bind('<<ComboboxSelected>>', lambda e: self._toggle_signal_fields())
+
     def _toggle_clock_fields(self):
         state = 'normal' if self.use_clock.get() else 'disabled'
         for widget in self.clock_fields:
             widget.config(state=state)
 
+    def _toggle_signal_fields(self):
+        # For DC, only Peak-to-Peak Voltage is disabled; offset remains enabled
+        if self.input_type.get() == 'DC':
+            self.frequency_entry.config(state='disabled')
+            self.amplitude_entry.config(state='disabled')
+            self.offset_entry.config(state='normal')
+            self.signal_fields[2].config(state='disabled')  # phase_mode_menu
+        else:
+            self.frequency_entry.config(state='normal')
+            self.amplitude_entry.config(state='normal')
+            self.offset_entry.config(state='normal')
+            self.signal_fields[2].config(state='normal')  # phase_mode_menu
+
     def start_generators(self):
         try:
             duration = float(self.duration_entry.get())
-            frequency = float(self.frequency_entry.get())
-            amplitude = float(self.amplitude_entry.get())
-            offset = float(self.offset_entry.get())
-            if duration <= 0 or frequency <= 0:
-                raise ValueError
+            input_type = self.input_type.get()
+            if input_type == 'DC':
+                # For DC, only offset is used as the output voltage
+                offset = float(self.offset_entry.get())
+                amplitude = None
+                frequency = None
+                if duration <= 0:
+                    raise ValueError
+            else:
+                amplitude = float(self.amplitude_entry.get())
+                frequency = float(self.frequency_entry.get())
+                offset = float(self.offset_entry.get())
+                if duration <= 0 or frequency <= 0:
+                    raise ValueError
             use_clock = self.use_clock.get()
             if use_clock:
                 clock_frequency = float(self.clock_frequency_entry.get())
@@ -269,17 +308,30 @@ class SignalGeneratorGUI:
 
         def show_double_gui_input(self):
             type_ = self.type
-            for num in [1, 2]:
-                self.sg.sg.write(f'SOUR{num}:FUNC {type_}')
-                self.sg.sg.write(f'SOUR{num}:FREQ {frequency}')
-                self.sg.sg.write(f'SOUR{num}:VOLT {amplitude/1000}')
-                self.sg.sg.write(f'SOUR{num}:VOLT:OFFS {offset/1000}')
-            self.sg.sg.write('SOUR1:PHAS 0')
-            self.sg.sg.write('SOUR2:PHAS 180')
-            self.sg.sg.write('PHAS:SYNC')
+            if type_ == 'DC':
+                # For DC, use offset as output voltage
+                for num in [1, 2]:
+                    self.sg.sg.write(f'SOUR{num}:FUNC {type_}')
+                    self.sg.sg.write(f'SOUR{num}:VOLT:OFFS {offset/1000}')
+                # No phase, frequency, or amplitude commands for DC
+            else:
+                for num in [1, 2]:
+                    self.sg.sg.write(f'SOUR{num}:FUNC {type_}')
+                    self.sg.sg.write(f'SOUR{num}:FREQ {frequency}')
+                    self.sg.sg.write(f'SOUR{num}:VOLT {amplitude/1000}')
+                    self.sg.sg.write(f'SOUR{num}:VOLT:OFFS {offset/1000}')
+                # Set phase according to phase_mode
+                if self.phase_mode.get() == 'Antiphase':
+                    self.sg.sg.write('SOUR1:PHAS 0')
+                    self.sg.sg.write('SOUR2:PHAS 180')
+                else:
+                    self.sg.sg.write('SOUR1:PHAS 0')
+                    self.sg.sg.write('SOUR2:PHAS 0')
+                self.sg.sg.write('PHAS:SYNC')
             for num in [1, 2]:
                 self.sg.sg.write(f'OUTP{num} ON')
-            self.sg.sg.write('PHAS:SYNC')
+            if type_ != 'DC':
+                self.sg.sg.write('PHAS:SYNC')
             time.sleep(self.duration)
             # Only send OFF if not stopped
             if not getattr(self, '_stop_generators', False):
