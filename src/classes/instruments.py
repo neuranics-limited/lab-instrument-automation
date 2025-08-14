@@ -4,25 +4,18 @@ import pyvisa
 
 
 class PowerSupply:
-    def __init__(self, address= 'USB0::0x2A8D::0x1002::MY61005055::0::INSTR', timeout= 5000):
+    def __init__(self, address= 'USB0::0x2A8D::0x1002::MY61005055::0::INSTR'):
         self.rm = pyvisa.ResourceManager()
         self.ps = self.rm.open_resource(address)
         self.ps.write_termination = '\n'
-        self.ps.timeout = timeout
-        self.connected = True
         self.ps.write('*RST')
         self.ps.write('*CLS')
-        self.ps.write('OUTP:LOAD INF')
-        
-        '''
-        idn = self.ps.query('*IDN?')
-        print(f'*IDN? = {idn.rstrip()}')
-        '''
+        #self.ps.write('OUTP:LOAD INF')
     
     def close(self) -> None:
         self.ps.close()
         self.rm.close()
-        self.connected = False
+
 
 
 class SignalGenerator:
@@ -33,7 +26,6 @@ class SignalGenerator:
         self.sg.write('*RST')
         self.sg.write('*CLS')
         self.sg.write('SYST:BEEP:STAT OFF') # Disable beeping
-        #self.sg.write('OUTP:LOAD INF')
         self.sg.write('PHAS:SYNC')
         self.sg.write('ROSC:SOUR INT')  
         self.sg.write('TRIG:SOUR BUS')  

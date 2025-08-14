@@ -3,33 +3,6 @@ import time
 from classes.instruments import PowerSupply, SignalGenerator
 
 
-
-class signal_gen():
-    def __init__(self, address):
-        self.sg = SignalGenerator(address, timeout=5000)
-
-    def show_single(self):
-        if not self.sg.connected:
-            print("Failed to connect to Signal Generator.")
-            return
-        else:
-            while True:
-                duration = float(input("Enter duration in seconds (0 to exit): "))
-                if duration <= 0:
-                    self.sg.close()
-                    break
-                else:
-                    type_ = input("Enter signal type (sin, square): ").strip().lower()
-                    frequency = float(input("Enter frequency in Hz: "))
-                    amplitude = float(input("Enter amplitude in mV: "))
-                    offset = float(input("Enter offset in mV: "))
-                    if type_== 'sin':
-                        self.sg.sin(frequency=frequency, amplitude=amplitude, offset=offset)
-                    elif type_ == 'square':
-                        self.sg.square(frequency=frequency, amplitude=amplitude, offset=offset)
-                    time.sleep(duration)
-                    self.sg.sg.write('OUTP OFF')
-
 class dual_channel():
     def __init__(self, address, type='sin', duration=10):
         self.sg = SignalGenerator(address)

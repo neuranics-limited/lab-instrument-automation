@@ -8,7 +8,7 @@ import pyvisa
 import time
 import threading
 from classes.instruments import PowerSupply, SignalGenerator
-from classes.measurements import signal_gen, dual_channel
+from classes.measurements import dual_channel
 
 rm = pyvisa.ResourceManager()
 
