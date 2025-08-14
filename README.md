@@ -66,17 +66,18 @@ A modern Python desktop application for automating laboratory instruments, featu
 lab-instrument-automation/
 ├── README.md
 ├── requirements.txt
-├── online_code.py
 ├── src/
 │   ├── main.py
-│   ├── GeneratorsSync_testing.py
-│   ├── PowerSupply_testing.py
 │   └── classes/
 │       ├── __init__.py
 │       ├── instruments.py
+│       ├── GUIs.py
 │       ├── measurements.py
-│       ├── Trial_classes.py
-│       └── Measurements_howto
+│       └──  Trial_classes.py
+│   └── __pycache__/
+│       ├── __init__.cpython-311.pyc
+│       ├── instruments.cpython-311.pyc
+│       └── measurements.cpython-311.pyc
 ```
 
 ## Instrument Support
