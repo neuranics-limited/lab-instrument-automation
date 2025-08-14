@@ -1,14 +1,13 @@
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
-import pyvisa
 import time
 import threading
 from classes.instruments import PowerSupply
 from classes.measurements import dual_channel
 from classes.instruments import instrument_addresses
 
-rm = pyvisa.ResourceManager()
+
 
 class PowerSupplyGUI:
     def __init__(self, master):
@@ -395,3 +394,20 @@ class SignalGeneratorGUI:
             self.clock_sg.sg.close()
             self.clock_sg = None
         self.master.after(0, lambda: self.status.set("Generators stopped."))
+
+
+'''
+# Debug purposes
+def initialize_instruments():
+    resources = rm.list_resources()
+    found = []
+    for name, addr in instrument_addresses.items():
+        if addr in resources:
+            found.append(f"{name} -> ({addr}) \n")
+    if found:
+        print("Available instruments:\n" + "".join(found))
+    else:
+        print("No known instruments found.")
+
+initialize_instruments()
+'''

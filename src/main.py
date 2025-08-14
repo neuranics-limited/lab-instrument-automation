@@ -1,23 +1,9 @@
 # main.py
 # --- GUI Implementation ---
-import pyvisa
 import tkinter as tk
 from tkinter import ttk
 from classes.GUIs import PowerSupplyGUI, SignalGeneratorGUI
-from classes.instruments import instrument_addresses
 
-rm = pyvisa.ResourceManager()
-
-def initialize_instruments():
-    resources = rm.list_resources()
-    found = []
-    for name, addr in instrument_addresses.items():
-        if addr in resources:
-            found.append(f"{name} -> ({addr}) \n")
-    if found:
-        print("Available instruments:\n" + "".join(found))
-    else:
-        print("No known instruments found.")
 
 def main():
     root = tk.Tk()
@@ -65,4 +51,3 @@ def main():
     
 if __name__ == "__main__":
     main()
-    rm.close()
