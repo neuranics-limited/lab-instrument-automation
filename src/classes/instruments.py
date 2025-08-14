@@ -16,7 +16,7 @@ class PowerSupply:
         self.ps.write('*RST')
         self.ps.write('*CLS')
         #self.ps.write('OUTP:LOAD INF')
-    
+
     def close(self) -> None:
         self.ps.close()
         self.rm.close()
@@ -31,8 +31,8 @@ class SignalGenerator:
         self.sg.write('*CLS')
         self.sg.write('SYST:BEEP:STAT OFF') # Disable beeping
         self.sg.write('PHAS:SYNC')
-        self.sg.write('ROSC:SOUR INT')  
-        self.sg.write('TRIG:SOUR BUS')  
+        self.sg.write('ROSC:SOUR INT')
+        self.sg.write('TRIG:SOUR BUS')
         self.sg.write(f'OUTP1:LOAD INF')
         self.sg.write(f'OUTP2:LOAD INF')
 
@@ -44,14 +44,14 @@ class SignalGenerator:
         offset = offset / 1000
         self.sg.write(f'APPL:SIN {frequency},{amplitude},{offset}')
         self.sg.write(f'PHAS {phase}')
-        
+
 
     def square(self, frequency=1000, amplitude=1.0, offset=0.0, phase=0.0):
         amplitude = amplitude / 1000
         offset = offset / 1000
         self.sg.write(f'APPL:SQU {frequency},{amplitude},{offset}')
         self.sg.write(f'PHAS {phase}')
-        
+
 
     def enable_output(self, enable=True):
         self.sg.write('OUTP ON' if enable else 'OUTP OFF')

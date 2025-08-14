@@ -7,7 +7,7 @@ class dual_channel():
         self.sg = SignalGenerator(address)
         self.type = type.upper()
         self.duration = duration
-        
+
 
     def show_double(self):
         type_ = self.type
@@ -15,7 +15,7 @@ class dual_channel():
         frequency = float(input("Enter frequency in Hz: "))
         amplitude = float(input("Enter amplitude in mV: "))/1000
         offset = float(input("Enter offset in mV: "))/1000
-           
+
         for num in [1, 2]:
             self.sg.sg.write(f'SOUR{num}:FUNC {type_}')
             self.sg.sg.write(f'SOUR{num}:FREQ {frequency}')

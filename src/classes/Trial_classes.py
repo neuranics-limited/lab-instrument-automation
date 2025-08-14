@@ -19,7 +19,7 @@ class InputOffsetVoltage:
     def measure(self, voltages=[], currents=[], dwells=[]):
         """
         Sets the voltage, current, and dwell time for the power supply.
-        
+
         Parameters
         ----------
         voltages : list
@@ -31,11 +31,11 @@ class InputOffsetVoltage:
         """
         if len(voltages) != len(currents) or len(voltages) != len(dwells):
             raise ValueError("All input lists must have the same length.")
-        
+
         results = []
 
         self.ps.write('OUTPUT ON', '(@1)')  # Turn on output for channel 1
-        
+
         for v, c, dwell in zip(voltages, currents, dwells):
             self.ps.write(f'VOLT {v}', '(@1)')  # Set voltage for channel 1
             self.ps.write(f'CURR {c}', '(@1)')  # Set current for channel 1
@@ -58,7 +58,7 @@ class InputOffsetVoltage:
         self.V_typical = mean + 0.47 * std  # 68th percentile
         self.V_max = np.amax(v_offset)  # Maximum output voltage
         '''
-        
+
         self.ps.write('OUTPUT OFF')
 
     def close(self):
@@ -80,11 +80,11 @@ class OpenLoopGain:
         gain : float
             The gain of the amplifier circuit.
         """
-        
-        
+
+
         self.input_signal = input_signal
         self.output_signal = output_signal
-    
+
     def measure_gain(self):
         """
         Measures the gain of the amplifier circuit by calculating the ratio of output to input signal.
@@ -96,7 +96,7 @@ class OpenLoopGain:
         """
         if len(self.input_signal) != len(self.output_signal):
             raise ValueError("Input and output signals must have the same length.")
-        
+
         # Calculate gain as the ratio of output to input
         gain_array = self.output_signal / self.input_signal
         gain_mean = np.mean(gain_array)

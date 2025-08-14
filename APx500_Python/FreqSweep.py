@@ -4,9 +4,9 @@ import time
 import matplotlib.pyplot as plt
 
 # Add a reference to the APx API
-clr.AddReference(r"C:\Program Files\Audio Precision\APx500 9.1\API\AudioPrecision.API3.dll")        
-clr.AddReference(r"C:\Program Files\Audio Precision\APx500 9.1\API\AudioPrecision.API2.dll")    
-clr.AddReference(r"C:\Program Files\Audio Precision\APx500 9.1\API\AudioPrecision.API.dll") 
+clr.AddReference(r"C:\Program Files\Audio Precision\APx500 9.1\API\AudioPrecision.API3.dll")
+clr.AddReference(r"C:\Program Files\Audio Precision\APx500 9.1\API\AudioPrecision.API2.dll")
+clr.AddReference(r"C:\Program Files\Audio Precision\APx500 9.1\API\AudioPrecision.API.dll")
 from AudioPrecision.API import *
 
 # Instantiate and create a new project
@@ -64,7 +64,7 @@ plt.legend()
 plt.show()
 
 # Save data
-np.savetxt('voltage_noise_data.csv', np.column_stack([frequencies, noise_levels]), 
+np.savetxt('voltage_noise_data.csv', np.column_stack([frequencies, noise_levels]),
            delimiter=',', header='Frequency_Hz,Noise_V_per_sqrt_Hz')
 
 print("Measurement complete. Data saved to voltage_noise_data.csv")
