@@ -36,7 +36,7 @@ A modern Python desktop application for automating laboratory instruments, featu
 
 ## Screenshots
 
-![alt text](Pictures/Home_Page.pngHome_Page.png)
+![alt text](Pictures/Home_Page.png)
 ![alt text](Pictures/SignalGen_Page.png)
 ![alt text](Pictures/PowerSupply_Page.png)
 
