@@ -1,6 +1,6 @@
 import numpy as np
 import time
-from classes.instruments import PowerSupply, SignalGenerator
+from classes.instruments import SignalGenerator
 
 
 class dual_channel():

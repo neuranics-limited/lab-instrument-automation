@@ -1,6 +1,11 @@
-import numpy as np
-import matplotlib.pyplot as plt
 import pyvisa
+
+instrument_addresses = {
+    'power_supply': 'USB0::0x2A8D::0x1002::MY61005055::INSTR',  # Power supply USB address
+    'generator1': 'USB0::0x0957::0x2807::MY62003816::INSTR',
+    'generator2': 'USB0::0x0957::0x2807::MY62003715::INSTR',
+    'oscilloscope': 'USB0::0x2A8D::0x4704::MY65120148::INSTR'  # Oscilloscope USB address
+}
 
 
 class PowerSupply:
@@ -15,7 +20,6 @@ class PowerSupply:
     def close(self) -> None:
         self.ps.close()
         self.rm.close()
-
 
 
 class SignalGenerator:
