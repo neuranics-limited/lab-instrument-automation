@@ -36,7 +36,9 @@ A modern Python desktop application for automating laboratory instruments, featu
 
 ## Screenshots
 
-> Add screenshots of the Power Supply and Signal Generator GUIs here for best effect.
+![alt text](Pictures\Home_Page.png)
+![alt text](Pictures\SignalGen_Page.png)
+![alt text](Pictures\PowerSupply_Page.png)
 
 ## Quick Start
 
@@ -47,7 +49,7 @@ A modern Python desktop application for automating laboratory instruments, featu
 
 2. **Connect Instruments:**
      - Plug in Keysight 33500B and E36311A via USB
-     - Confirm VISA addresses in `main.py` match your devices
+     - Confirm VISA addresses in `instruments.py` match your devices
 
 3. **Run the Application:**
      ```powershell
@@ -96,6 +98,10 @@ lab-instrument-automation/
 - Python 3.8+
 - PyVISA
 - Tkinter (standard with Python)
+
+## NOTE
+
+Support for the Audio Precission APx555 audio analyzer is being developed and not fully functional as of yet.
 
 ## License
 
