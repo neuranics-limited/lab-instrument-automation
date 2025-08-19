@@ -2,7 +2,7 @@
 # --- GUI Implementation ---
 import tkinter as tk
 from tkinter import ttk
-from classes.GUIs import ManualTestingGUI, AutomatedTestsGUI, PowerSupplyGUI, SignalGeneratorGUI, OscilloscopeGUI
+from classes.GUIs import ManualTestingGUI, AutomatedTestsGUI
 
 
 
@@ -41,7 +41,7 @@ def main():
         )
 
     setup_styles()
-    root, frame = create_window("Lab Instrument Automation")
+    root, frame = create_window("Neuranics ASIC Lab Automation")
 
     def open_manual():
         manual_win = tk.Toplevel(root)
