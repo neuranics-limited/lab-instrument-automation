@@ -1,5 +1,5 @@
 import time
-from classes.instruments import SignalGenerator
+from classes.instruments import PowerSupply, SignalGenerator, Oscilloscope
 
 
 class dual_channel():
@@ -30,3 +30,16 @@ class dual_channel():
         time.sleep(self.duration)
         for num in [1, 2]:
             self.sg.sg.write(f'OUTP{num} OFF')
+
+
+class read_scope():
+    def __init__(self, address):
+        self.scope = Oscilloscope(address)
+
+    def read_waveform(self, channel=1):
+        self.scope.write(f":MEASU:IMMED:TYPe WAVeform")
+        self.scope.write(f":MEASU:IMMED:WAVeform:CH{channel} ON")
+        waveform = self.scope.read(f":MEASU:IMMED:WAVeform:CH{channel}?")
+        return waveform
+
+

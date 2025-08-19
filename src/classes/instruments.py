@@ -56,3 +56,20 @@ class SignalGenerator:
     def enable_output(self, enable=True):
         self.sg.write('OUTP ON' if enable else 'OUTP OFF')
 
+
+class Oscilloscope:
+    def __init__(self):
+        self.rm = pyvisa.ResourceManager()
+        self.scope = self.rm.open_resource(instrument_addresses['oscilloscope'])
+        self.scope.write_termination = '\n'
+        self.scope.read_termination = '\n'
+        self.scope.write('*RST')
+        self.scope.write('*CLS')
+        self.scope.write(f'INP1:LOAD INF')
+        self.scope.write(f'INP2:LOAD INF')
+        self.scope.write(f'INP3:LOAD INF')
+        self.scope.write(f'INP4:LOAD INF')
+
+    def close(self):
+        self.scope.close()
+        self.rm.close()

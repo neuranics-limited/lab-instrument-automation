@@ -1,10 +1,12 @@
+# ...existing code...
+
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
 import time
 import threading
-from classes.instruments import PowerSupply
-from classes.measurements import dual_channel
+from classes.instruments import PowerSupply, SignalGenerator, Oscilloscope
+from classes.measurements import dual_channel, read_scope
 from classes.instruments import instrument_addresses
 
 
@@ -394,6 +396,79 @@ class SignalGeneratorGUI:
             self.clock_sg.sg.close()
             self.clock_sg = None
         self.master.after(0, lambda: self.status.set("Generators stopped."))
+
+class OscilloscopeGUI:
+    def __init__(self, master):
+        self.master = master
+        master.title("Oscilloscope Control")
+        master.configure(bg="#e9ecef")
+
+        style = ttk.Style()
+        style.theme_use('clam')
+        style.configure('TFrame', background="#ffffff")
+        style.configure('TLabel', background="#ffffff", font=("Segoe UI", 12))
+        style.configure('Accent.Rounded.TButton', font=("Segoe UI", 12, "bold"), padding=[14, 8], borderwidth=2, relief="flat", background="#4CAF50", foreground="white")
+        style.map('Accent.Rounded.TButton',
+            background=[('active', '#388E3C'), ('!active', '#4CAF50')],
+            relief=[('pressed', 'groove'), ('!pressed', 'flat')],
+            bordercolor=[('focus', '#388E3C'), ('!focus', '#4CAF50')]
+        )
+
+        frame = ttk.Frame(master, padding=20, style='TFrame')
+        frame.pack(padx=30, pady=30)
+
+        title = ttk.Label(frame, text="Oscilloscope Control", font=("Segoe UI", 18, "bold"), background="#ffffff")
+        title.pack(pady=(0, 18))
+
+        # Board+Chip label
+        label_frame = ttk.Frame(frame, style='TFrame')
+        label_frame.pack(pady=6, fill='x')
+        ttk.Label(label_frame, text="Board + Chip Label:", font=("Segoe UI", 12), background="#ffffff").pack(side='left', padx=(0,8))
+        self.label_entry = ttk.Entry(label_frame, font=("Segoe UI", 12), width=24)
+        self.label_entry.pack(side='left', padx=(0,8))
+
+        # Comment box
+        comment_frame = ttk.Frame(frame, style='TFrame')
+        comment_frame.pack(pady=6, fill='x')
+        ttk.Label(comment_frame, text="Comment:", font=("Segoe UI", 12), background="#ffffff").pack(side='left', padx=(0,8))
+        self.comment_text = tk.Text(comment_frame, font=("Segoe UI", 12), height=3, width=32)
+        self.comment_text.pack(side='left', padx=(0,8))
+
+        # Read Scope button
+        self.read_button = ttk.Button(frame, text="Read Scope & Save", command=self.read_and_save, style='Accent.Rounded.TButton')
+        self.read_button.pack(pady=12)
+
+        # Status bar
+        self.status = tk.StringVar()
+        self.status.set("Ready.")
+        status_bar = ttk.Label(self.master, textvariable=self.status, relief=tk.SUNKEN, anchor='w', background="#f8f9fa", font=("Segoe UI", 10))
+        status_bar.pack(fill=tk.X, side=tk.BOTTOM, ipady=3)
+
+    def read_and_save(self):
+        import datetime
+        try:
+            from classes.measurements import read_scope
+            scope_reader = read_scope()
+            data = scope_reader.read()  # Assumes read() returns the scope data as a string or bytes
+            label = self.label_entry.get().strip().replace(' ', '_')
+            if not label:
+                label = "unlabeled"
+            today = datetime.date.today().strftime('%Y-%m-%d')
+            scope_filename = f"scope_{label}_{today}.txt"
+            comment_filename = f"scope_{label}_{today}_comment.txt"
+            # Save scope output
+            with open(scope_filename, "w") as f:
+                f.write(data if isinstance(data, str) else data.decode())
+            # Save comment
+            comment = self.comment_text.get("1.0", tk.END).strip()
+            with open(comment_filename, "w") as f:
+                f.write(comment)
+            self.status.set(f"Scope data saved to {scope_filename}, comment saved to {comment_filename}")
+        except Exception as e:
+            self.status.set(f"Error: {e}")
+
+
+
 
 
 '''
