@@ -1,16 +1,77 @@
-# ...existing code...
-
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
+from datetime import datetime
 import time
 import threading
-from classes.instruments import PowerSupply, SignalGenerator, Oscilloscope
+from classes.instruments import PowerSupply
 from classes.measurements import dual_channel, read_scope
 from classes.instruments import instrument_addresses
 
 
 
+# --- Main Menu Modes ---
+class ManualTestingGUI:
+    def __init__(self, master):
+        master.title("Manual Testing")
+        master.configure(bg="#e9ecef")
+        style = ttk.Style()
+        style.theme_use('clam')
+        style.configure('TFrame', background="#ffffff")
+        style.configure('TLabel', background="#ffffff", font=("Segoe UI", 12))
+        style.configure('Rounded.TButton', font=("Segoe UI", 12, "bold"), padding=[14, 8], borderwidth=2, relief="flat", background="#e3f2fd", foreground="#222")
+        style.configure('Accent.Rounded.TButton', font=("Segoe UI", 12, "bold"), padding=[14, 8], borderwidth=2, relief="flat", background="#4CAF50", foreground="white")
+        frame = ttk.Frame(master, padding=30, style='TFrame')
+        frame.pack(padx=40, pady=40)
+        label = ttk.Label(frame, text="Manual Testing Mode", font=("Segoe UI", 16, "bold"), background="#ffffff")
+        label.pack(pady=(0, 20))
+
+        def open_ps():
+            try:
+                ps_win = tk.Toplevel(master)
+                PowerSupplyGUI(ps_win)
+            except Exception as e:
+                messagebox.showerror("Instrument Error", f"Power Supply is not connected.\nError: {e}")
+
+        def open_sg():
+            try:
+                sg_win = tk.Toplevel(master)
+                SignalGeneratorGUI(sg_win)
+            except Exception as e:
+                messagebox.showerror("Instrument Error", f"Signal Generator is not connected.\nError: {e}")
+
+        def open_os():
+            try:
+                os_win = tk.Toplevel(master)
+                OscilloscopeGUI(os_win)
+            except Exception as e:
+                messagebox.showerror("Instrument Error", f"Oscilloscope is not connected.\nError: {e}")
+
+        btn_ps = ttk.Button(frame, text="Power Supply", style='Rounded.TButton', command=open_ps)
+        btn_ps.pack(pady=10, fill='x')
+        btn_sg = ttk.Button(frame, text="Signal Generator", style='Rounded.TButton', command=open_sg)
+        btn_sg.pack(pady=10, fill='x')
+        btn_os = ttk.Button(frame, text="Oscilloscope", style='Accent.Rounded.TButton', command=open_os)
+        btn_os.pack(pady=10, fill='x')
+
+class AutomatedTestsGUI:
+    def __init__(self, master):
+        master.title("Automated Tests")
+        master.configure(bg="#e9ecef")
+        style = ttk.Style()
+        style.theme_use('clam')
+        style.configure('TFrame', background="#ffffff")
+        style.configure('TLabel', background="#ffffff", font=("Segoe UI", 12))
+        frame = ttk.Frame(master, padding=30, style='TFrame')
+        frame.pack(padx=40, pady=40)
+        label = ttk.Label(frame, text="Automated Tests Mode", font=("Segoe UI", 16, "bold"), background="#ffffff")
+        label.pack(pady=(0, 20))
+        # Add automated testing widgets here
+
+
+
+
+# --- Instrument Control GUIs ---
 class PowerSupplyGUI:
     def __init__(self, master):
         self.master = master
@@ -417,7 +478,7 @@ class OscilloscopeGUI:
         frame = ttk.Frame(master, padding=20, style='TFrame')
         frame.pack(padx=30, pady=30)
 
-        title = ttk.Label(frame, text="Oscilloscope Control", font=("Segoe UI", 18, "bold"), background="#ffffff")
+        title = ttk.Label(frame, text="Oscilloscope Control (HD304MSO)", font=("Segoe UI", 18, "bold"), background="#ffffff")
         title.pack(pady=(0, 18))
 
         # Board+Chip label
@@ -445,17 +506,15 @@ class OscilloscopeGUI:
         status_bar.pack(fill=tk.X, side=tk.BOTTOM, ipady=3)
 
     def read_and_save(self):
-        import datetime
         try:
-            from classes.measurements import read_scope
             scope_reader = read_scope()
             data = scope_reader.read()  # Assumes read() returns the scope data as a string or bytes
             label = self.label_entry.get().strip().replace(' ', '_')
             if not label:
                 label = "unlabeled"
-            today = datetime.date.today().strftime('%Y-%m-%d')
+            today = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
             scope_filename = f"scope_{label}_{today}.txt"
-            comment_filename = f"scope_{label}_{today}_comment.txt"
+            comment_filename = f"scope_{label}_{today}_comments.txt"
             # Save scope output
             with open(scope_filename, "w") as f:
                 f.write(data if isinstance(data, str) else data.decode())
