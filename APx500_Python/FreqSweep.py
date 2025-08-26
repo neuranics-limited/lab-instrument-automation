@@ -31,14 +31,16 @@ APx.SignalAnalyzer.Averages = 10  # Set number of averages for noise reduction
 
 APx.SignalAnalyzer.AnalogInputBandwidth = SignalAnalyzerBandwidthType.Bw20k44kHz  # Example: 20 kHz to 44 kHz bandwidth, check your API for available enums
 
-# Enable voltage noise density result
-APx.SignalAnalyzer[MeasurementResultType.AmplitudeSpectralDensity].Enabled = True
+# Add a derived result and configure it
+noise_result = APx.SignalAnalyzer.AmplitudeSpectralDensity.Result.AsXYGraph()
+noise_result.Name = "Voltage Noise Density"
+noise_result.Checked = True
 
-# (Optional) Set up export if you want Excel output, but not needed for plotting
 
 print("Starting voltage noise density measurement...")
 
 # Run the measurement
+APx = APx500_Application()
 APx.Sequence.Run()
 
 # Wait for completion
@@ -47,11 +49,13 @@ while APx.Sequence.IsRunning:
     time.sleep(0.1)
 
 
-noise_result = APx.SignalAnalyzer[MeasurementResultType.AmplitudeSpectralDensity]
-frequencies = list(noise_result.GetXValues(InputChannelIndex.Ch1, VerticalAxis.Left, SourceDataType.Measured, 1))
-noise_levels = list(noise_result.GetYValues(InputChannelIndex.Ch1, VerticalAxis.Left, SourceDataType.Measured, 1))
+frequencies = list(APx.Sequence[0]["Signal Path1"].SequenceResults["Voltage Noise Density"].GetXValues(InputChannelIndex.Ch1, VerticalAxis.Left, SourceDataType.Measured, 1))
+noise_levels = list(APx.Sequence[0]["Signal Path1"].SequenceResults["Voltage Noise Density"].GetYValues(InputChannelIndex.Ch1, VerticalAxis.Left, SourceDataType.Measured, 1))
 
 
+cutoff_frequency = int(input("Enter cutoff frequency in Hz: "))   # Example cutoff frequency in Hz
+frequencies = [f for f in frequencies if f < cutoff_frequency]
+noise_levels = [n for n, f in zip(noise_levels, frequencies) if f < cutoff_frequency]
 
 # Plot results
 plt.figure(figsize=(10, 6))

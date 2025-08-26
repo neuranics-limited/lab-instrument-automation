@@ -3,6 +3,7 @@
 import tkinter as tk
 from tkinter import ttk
 from classes.GUIs import ManualTestingGUI, AutomatedTestsGUI
+from classes.measurements_AP import Noise
 
 
 
@@ -16,6 +17,10 @@ def main():
             win = tk.Toplevel(parent)
         win.title(title_text)
         win.configure(bg=bg)
+        # Prevent window from being resized or maximized
+        win.resizable(False, False)
+        win.minsize(600, 400)
+        win.maxsize(600, 400)
         frame = ttk.Frame(win, padding=30, style='TFrame')
         frame.pack(padx=40, pady=40)
         title = ttk.Label(frame, text=title_text, font=("Segoe UI", 20, "bold"), background="#ffffff")

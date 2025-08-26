@@ -4,6 +4,7 @@ from tkinter import ttk
 from datetime import datetime
 import time
 import threading
+import subprocess
 from classes.instruments import PowerSupply
 from classes.measurements import dual_channel, read_scope
 from classes.instruments import instrument_addresses
@@ -14,6 +15,9 @@ from classes.instruments import instrument_addresses
 class ManualTestingGUI:
     def __init__(self, master):
         master.title("Manual Testing")
+        master.resizable(False, False)
+        master.minsize(600, 400)
+        master.maxsize(600, 400)
         master.configure(bg="#e9ecef")
         style = ttk.Style()
         style.theme_use('clam')
@@ -47,16 +51,28 @@ class ManualTestingGUI:
             except Exception as e:
                 messagebox.showerror("Instrument Error", f"Oscilloscope is not connected.\nError: {e}")
 
+        def open_ap():
+            try:
+                ap_win = tk.Toplevel(master)
+                AudioPrecisionGUI(ap_win)
+            except Exception as e:
+                messagebox.showerror("Instrument Error", f"Audio Precision is not connected.\nError: {e}")
+
         btn_ps = ttk.Button(frame, text="Power Supply", style='Rounded.TButton', command=open_ps)
         btn_ps.pack(pady=10, fill='x')
         btn_sg = ttk.Button(frame, text="Signal Generator", style='Rounded.TButton', command=open_sg)
         btn_sg.pack(pady=10, fill='x')
         btn_os = ttk.Button(frame, text="Oscilloscope", style='Accent.Rounded.TButton', command=open_os)
         btn_os.pack(pady=10, fill='x')
+        btn_ap = ttk.Button(frame, text="Audio Precision", style='Accent.Rounded.TButton', command=open_ap)
+        btn_ap.pack(pady=10, fill='x')
 
 class AutomatedTestsGUI:
     def __init__(self, master):
         master.title("Automated Tests")
+        master.resizable(False, False)
+        master.minsize(600, 400)
+        master.maxsize(600, 400)
         master.configure(bg="#e9ecef")
         style = ttk.Style()
         style.theme_use('clam')
@@ -71,13 +87,13 @@ class AutomatedTestsGUI:
 
 
 
-# --- Instrument Control GUIs ---
+# --- Instrument Manual Control GUIs ---
 class PowerSupplyGUI:
     def __init__(self, master):
         self.master = master
         master.title("Power Supply Control")
         master.configure(bg="#e9ecef")
-
+        master.resizable(False, False)
         style = ttk.Style()
         style.theme_use('clam')
         style.configure('TFrame', background="#ffffff")
@@ -177,7 +193,7 @@ class SignalGeneratorGUI:
         self.master = master
         master.title("Signal Generator Control")
         master.configure(bg="#e9ecef")
-
+        master.resizable(False, False)
         style = ttk.Style()
         style.theme_use('clam')
         style.configure('TFrame', background="#ffffff")
@@ -463,7 +479,9 @@ class OscilloscopeGUI:
         self.master = master
         master.title("Oscilloscope Control")
         master.configure(bg="#e9ecef")
-
+        master.resizable(False, False)
+        master.minsize(600, 400)
+        master.maxsize(600, 400)
         style = ttk.Style()
         style.theme_use('clam')
         style.configure('TFrame', background="#ffffff")
@@ -526,9 +544,41 @@ class OscilloscopeGUI:
         except Exception as e:
             self.status.set(f"Error: {e}")
 
+class AudioPrecisionGUI:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Audio Precision Control")
+        self.master.geometry("600x400")
+        self.master.resizable(False, False)
+        self.create_widgets()
 
+    def create_widgets(self):
+        frame = ttk.Frame(self.master, padding=20)
+        frame.pack(fill=tk.BOTH, expand=True)
 
+        title = ttk.Label(frame, text="Audio Precision Control", font=("Segoe UI", 18, "bold"))
+        title.pack(pady=(0, 18))
 
+        message = ttk.Label(
+            frame,
+            text="Manual control is not available in this GUI.\nPlease use the APx500 software already provided for manual Audio Precision control.",
+            font=("Segoe UI", 14),
+            background="#ffffff",
+            foreground="#222",
+            wraplength=500,
+            justify="center"
+        )
+        message.pack(pady=40)
+
+        def open_api():
+            # Example: Launch APx500 software (update path as needed)
+            try:
+                subprocess.Popen([r"C:\Program Files\Audio Precision\APx500 9.1\AudioPrecision.APx500.exe"])
+            except Exception as e:
+                messagebox.showerror("Error", f"Could not open APx500 software.\n{e}")
+
+        btn_api = ttk.Button(frame, text="Open APx500 Software", style='Accent.Rounded.TButton', command=open_api)
+        btn_api.pack(pady=10)
 
 '''
 # Debug purposes
