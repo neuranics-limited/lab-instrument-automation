@@ -20,7 +20,6 @@ class Noise:
     def setup_noise_measurement(self):
         # Configure for noise measurement
         self.APx.SignalPathSetup.InputConnector.Type = InputConnectorType.AnalogBalanced
-        self.APx.SignalPathSetup.OutputConnector.Type = OutputConnectorType.AnalogBalanced
         self.APx.SignalPathSetup.Measure = MeasurandType.Voltage
         input1 = self.APx.SignalPathSetup.InputSettings(APxInputSelection.Input1)
         input1.Channels[0].Name = "Sensor"
@@ -32,7 +31,7 @@ class Noise:
         self.APx.SignalAnalyzer.Averages = 10
         self.APx.SignalAnalyzer.AnalogInputBandwidth = SignalAnalyzerBandwidthType.Bw20k44kHz
 
-        # Add a derived result and configure it
+        # Add a result and configure it
         noise_result = self.APx.SignalAnalyzer.AmplitudeSpectralDensity.Result.AsXYGraph()
         noise_result.Name = "Voltage Noise Density"
         noise_result.Checked = True
@@ -54,3 +53,22 @@ class Noise:
         return filtered_freqs, filtered_noise
 
 
+class TransferFunction:
+
+    def __init__(self):
+        self.APx = APx500_Application()
+        self.APx.Visible = True
+        self.APx.CreateNewProject()
+
+    def setup_transferfunc_measurement(self):
+        # Configure the signal path for transfer function measurement
+        self.APx.SignalPathSetup.OutputConnector.Type = OutputConnectorType.AnalogBalanced
+        self.APx.SignalPathSetup.InputConnector.Type = InputConnectorType.AnalogBalanced
+        self.APx.SignalPathSetup.Measure = MeasurandType.Voltage
+        input1 = self.APx.SignalPathSetup.InputSettings(APxInputSelection.Input1)
+        input1.Channels[0].Name = "AMP output"
+
+        # Add and configure a transfer function measurement
+        self.APx.AddMeasurement("Signal Path1", MeasurementType.TransferFunction)
+        self.APx.TransferFunction.Inputs[0].Channel = input1.Channels[0]
+        self.APx.TransferFunction.Outputs[0].Channel = output1.Channels[0]

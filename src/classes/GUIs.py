@@ -5,7 +5,7 @@ from datetime import datetime
 import time
 import threading
 import subprocess
-from classes.instruments import PowerSupply
+from classes.instruments import SMU
 from classes.measurements import dual_channel, read_scope
 from classes.instruments import instrument_addresses
 
@@ -30,12 +30,12 @@ class ManualTestingGUI:
         label = ttk.Label(frame, text="Manual Testing Mode", font=("Segoe UI", 16, "bold"), background="#ffffff")
         label.pack(pady=(0, 20))
 
-        def open_ps():
+        def open_smu():
             try:
-                ps_win = tk.Toplevel(master)
-                PowerSupplyGUI(ps_win)
+                smu_win = tk.Toplevel(master)
+                SMU_GUI(smu_win)
             except Exception as e:
-                messagebox.showerror("Instrument Error", f"Power Supply is not connected.\nError: {e}")
+                messagebox.showerror("Instrument Error", f"SMU is not connected.\nError: {e}")
 
         def open_sg():
             try:
@@ -58,7 +58,7 @@ class ManualTestingGUI:
             except Exception as e:
                 messagebox.showerror("Instrument Error", f"Audio Precision is not connected.\nError: {e}")
 
-        btn_ps = ttk.Button(frame, text="Power Supply", style='Rounded.TButton', command=open_ps)
+        btn_ps = ttk.Button(frame, text="SMU", style='Rounded.TButton', command=open_smu)
         btn_ps.pack(pady=10, fill='x')
         btn_sg = ttk.Button(frame, text="Signal Generator", style='Rounded.TButton', command=open_sg)
         btn_sg.pack(pady=10, fill='x')
@@ -88,10 +88,11 @@ class AutomatedTestsGUI:
 
 
 # --- Instrument Manual Control GUIs ---
-class PowerSupplyGUI:
+
+class SMU_GUI:
     def __init__(self, master):
         self.master = master
-        master.title("Power Supply Control")
+        master.title("SMU Control")
         master.configure(bg="#e9ecef")
         master.resizable(False, False)
         style = ttk.Style()
@@ -112,15 +113,15 @@ class PowerSupplyGUI:
             bordercolor=[('focus', '#388E3C'), ('!focus', '#4CAF50')]
         )
 
-        self.ps = PowerSupply(instrument_addresses['power_supply'])
-        self.ps.ps.write_termination = '\n'
+        self.smu = SMU(instrument_addresses['SMU'])
+        self.smu.smu.write_termination = '\n'
 
         # Main frame
         frame = ttk.Frame(master, padding=20, style='TFrame')
         frame.pack(padx=30, pady=30)
 
         # Title label with model number
-        title = ttk.Label(frame, text="Power Supply Control (E36311A)", font=("Segoe UI", 18, "bold"), background="#ffffff")
+        title = ttk.Label(frame, text="SMU Control (B2901BL)", font=("Segoe UI", 18, "bold"), background="#ffffff")
         title.grid(row=0, column=0, columnspan=2, pady=(0, 18))
 
         # Voltage
@@ -129,7 +130,7 @@ class PowerSupplyGUI:
         self.voltage_entry.grid(row=1, column=1, padx=10, pady=7)
 
         # Current
-        ttk.Label(frame, text="Current (A):").grid(row=2, column=0, sticky='e', padx=10, pady=7)
+        ttk.Label(frame, text="Current limit (µA):").grid(row=2, column=0, sticky='e', padx=10, pady=7)
         self.current_entry = ttk.Entry(frame, font=("Segoe UI", 12), width=14)
         self.current_entry.grid(row=2, column=1, padx=10, pady=7)
 
@@ -153,7 +154,7 @@ class PowerSupplyGUI:
     def turn_on(self):
         try:
             voltage = float(self.voltage_entry.get())
-            current = float(self.current_entry.get())
+            current = float(self.current_entry.get())/1e6
             duration = float(self.time_entry.get())
             if voltage <= 0 or current <= 0 or duration <= 0:
                 raise ValueError
@@ -161,11 +162,13 @@ class PowerSupplyGUI:
             messagebox.showerror("Input Error", "Please enter positive numbers for voltage, current, and time.")
             return
 
-        self.ps.ps.write('VOLT:MODE FIXED')
-        self.ps.ps.write('CURR:MODE FIXED')
-        self.ps.ps.write(f'VOLT {voltage}')
-        self.ps.ps.write(f'CURR {current}')
-        self.ps.ps.write('OUTP ON')
+        self.smu.smu.write(':SOUR:FUNC:MODE VOLT')
+        self.smu.smu.write('VOLT:MODE FIXED')
+        self.smu.smu.write('CURR:MODE FIXED')
+        self.smu.smu.write(f':SENS:CURR:PROT {current}')
+        self.smu.smu.write(f'VOLT {voltage}')
+        self.smu.smu.write('OUTP ON')
+
         self._countdown_time = int(duration)
         self._countdown_active = True
         self._countdown_status(voltage, current)
@@ -180,9 +183,9 @@ class PowerSupplyGUI:
 
     def turn_off(self):
         self._countdown_active = False
-        self.ps.ps.write('OUTP OFF')
-        self.ps.ps.write('VOLT 0')
-        self.ps.ps.write('CURR 0')
+        self.smu.smu.write('OUTP OFF')
+        self.smu.smu.write('VOLT 0')
+        self.smu.smu.write('CURR 0')
         self.voltage_entry.delete(0, tk.END)
         self.current_entry.delete(0, tk.END)
         self.time_entry.delete(0, tk.END)
@@ -594,4 +597,107 @@ def initialize_instruments():
         print("No known instruments found.")
 
 initialize_instruments()
+'''
+
+
+'''
+class PowerSupplyGUI:
+    def __init__(self, master):
+        self.master = master
+        master.title("Power Supply Control")
+        master.configure(bg="#e9ecef")
+        master.resizable(False, False)
+        style = ttk.Style()
+        style.theme_use('clam')
+        style.configure('TFrame', background="#ffffff")
+        style.configure('TLabel', background="#ffffff", font=("Segoe UI", 12))
+        # Softer, more rounded button look
+        style.configure('Rounded.TButton', font=("Segoe UI", 12, "bold"), padding=[14, 8], borderwidth=2, relief="flat", background="#e3f2fd", foreground="#222")
+        style.map('Rounded.TButton',
+            background=[('active', '#bbdefb'), ('!active', '#e3f2fd')],
+            relief=[('pressed', 'groove'), ('!pressed', 'flat')],
+            bordercolor=[('focus', '#90caf9'), ('!focus', '#e3f2fd')]
+        )
+        style.configure('Accent.Rounded.TButton', font=("Segoe UI", 12, "bold"), padding=[14, 8], borderwidth=2, relief="flat", background="#4CAF50", foreground="white")
+        style.map('Accent.Rounded.TButton',
+            background=[('active', '#388E3C'), ('!active', '#4CAF50')],
+            relief=[('pressed', 'groove'), ('!pressed', 'flat')],
+            bordercolor=[('focus', '#388E3C'), ('!focus', '#4CAF50')]
+        )
+
+        self.ps = PowerSupply(instrument_addresses['power_supply'])
+        self.ps.ps.write_termination = '\n'
+
+        # Main frame
+        frame = ttk.Frame(master, padding=20, style='TFrame')
+        frame.pack(padx=30, pady=30)
+
+        # Title label with model number
+        title = ttk.Label(frame, text="Power Supply Control (E36311A)", font=("Segoe UI", 18, "bold"), background="#ffffff")
+        title.grid(row=0, column=0, columnspan=2, pady=(0, 18))
+
+        # Voltage
+        ttk.Label(frame, text="Voltage (V):").grid(row=1, column=0, sticky='e', padx=10, pady=7)
+        self.voltage_entry = ttk.Entry(frame, font=("Segoe UI", 12), width=14)
+        self.voltage_entry.grid(row=1, column=1, padx=10, pady=7)
+
+        # Current
+        ttk.Label(frame, text="Current (A):").grid(row=2, column=0, sticky='e', padx=10, pady=7)
+        self.current_entry = ttk.Entry(frame, font=("Segoe UI", 12), width=14)
+        self.current_entry.grid(row=2, column=1, padx=10, pady=7)
+
+        # Time
+        ttk.Label(frame, text="Time (s):").grid(row=3, column=0, sticky='e', padx=10, pady=7)
+        self.time_entry = ttk.Entry(frame, font=("Segoe UI", 12), width=14)
+        self.time_entry.grid(row=3, column=1, padx=10, pady=7)
+
+        # Buttons
+        self.on_button = ttk.Button(frame, text="Turn ON", command=self.turn_on, style='Accent.Rounded.TButton')
+        self.on_button.grid(row=4, column=0, pady=18, padx=10, sticky='ew')
+        self.off_button = ttk.Button(frame, text="Turn OFF", command=self.turn_off, style='Rounded.TButton')
+        self.off_button.grid(row=4, column=1, pady=18, padx=10, sticky='ew')
+
+        # Status bar
+        self.status = tk.StringVar()
+        self.status.set("Ready.")
+        status_bar = ttk.Label(master, textvariable=self.status, relief=tk.SUNKEN, anchor='w', background="#f8f9fa", font=("Segoe UI", 10))
+        status_bar.pack(fill=tk.X, side=tk.BOTTOM, ipady=3)
+
+    def turn_on(self):
+        try:
+            voltage = float(self.voltage_entry.get())
+            current = float(self.current_entry.get())
+            duration = float(self.time_entry.get())
+            if voltage <= 0 or current <= 0 or duration <= 0:
+                raise ValueError
+        except ValueError:
+            messagebox.showerror("Input Error", "Please enter positive numbers for voltage, current, and time.")
+            return
+
+        self.ps.ps.write('VOLT:MODE FIXED')
+        self.ps.ps.write('CURR:MODE FIXED')
+        self.ps.ps.write(f'VOLT {voltage}')
+        self.ps.ps.write(f'CURR {current}')
+        self.ps.ps.write('OUTP ON')
+        self._countdown_time = int(duration)
+        self._countdown_active = True
+        self._countdown_status(voltage, current)
+
+    def _countdown_status(self, voltage, current):
+        if self._countdown_active and self._countdown_time > 0:
+            self.status.set(f"Output ON: {voltage} V, {current} A | Time left: {self._countdown_time} s")
+            self._countdown_time -= 1
+            self.master.after(1000, lambda: self._countdown_status(voltage, current))
+        else:
+            self.turn_off()
+
+    def turn_off(self):
+        self._countdown_active = False
+        self.ps.ps.write('OUTP OFF')
+        self.ps.ps.write('VOLT 0')
+        self.ps.ps.write('CURR 0')
+        self.voltage_entry.delete(0, tk.END)
+        self.current_entry.delete(0, tk.END)
+        self.time_entry.delete(0, tk.END)
+        self.status.set("Output OFF.")
 '''

@@ -4,23 +4,24 @@ instrument_addresses = {
     'power_supply': 'USB0::0x2A8D::0x1002::MY61005055::INSTR',  # Power supply USB address
     'generator1': 'USB0::0x0957::0x2807::MY62003816::INSTR',
     'generator2': 'USB0::0x0957::0x2807::MY62003715::INSTR',
-    'oscilloscope': 'USB0::0x2A8D::0x4704::MY65120148::INSTR'  # Oscilloscope USB address
+    'oscilloscope': 'USB0::0x2A8D::0x4704::MY65120148::INSTR',
+    'SMU': 'USB0::0x2A8D::0x9101::MY65150106::INSTR'  # SMU USB address
 }
 
 
-class PowerSupply:
-    def __init__(self, address= 'USB0::0x2A8D::0x1002::MY61005055::0::INSTR'):
+
+
+class SMU:
+    def __init__(self, address):
         self.rm = pyvisa.ResourceManager()
-        self.ps = self.rm.open_resource(address)
-        self.ps.write_termination = '\n'
-        self.ps.write('*RST')
-        self.ps.write('*CLS')
-        #self.ps.write('OUTP:LOAD INF')
+        self.smu = self.rm.open_resource(address)
+        self.smu.write_termination = '\n'
+        self.smu.write('*RST')
+        self.smu.write('*CLS')
 
-    def close(self) -> None:
-        self.ps.close()
+    def close(self):
+        self.smu.close()
         self.rm.close()
-
 
 class SignalGenerator:
     def __init__(self, address):
@@ -56,7 +57,6 @@ class SignalGenerator:
     def enable_output(self, enable=True):
         self.sg.write('OUTP ON' if enable else 'OUTP OFF')
 
-
 class Oscilloscope:
     def __init__(self):
         self.rm = pyvisa.ResourceManager()
@@ -73,3 +73,21 @@ class Oscilloscope:
     def close(self):
         self.scope.close()
         self.rm.close()
+
+
+
+
+'''
+class PowerSupply:
+    def __init__(self, address= 'USB0::0x2A8D::0x1002::MY61005055::0::INSTR'):
+        self.rm = pyvisa.ResourceManager()
+        self.ps = self.rm.open_resource(address)
+        self.ps.write_termination = '\n'
+        self.ps.write('*RST')
+        self.ps.write('*CLS')
+        #self.ps.write('OUTP:LOAD INF')
+
+    def close(self) -> None:
+        self.ps.close()
+        self.rm.close()
+'''

@@ -71,7 +71,7 @@ def main():
                 pass
         root.destroy()
 
-    btn_close = ttk.Button(frame, text="Close App", style='Rounded.TButton', command=close_programme)
+    btn_close = ttk.Button(frame, text="Close Application", style='Rounded.TButton', command=close_programme)
     btn_close.pack(pady=20, fill='x')
 
     root.mainloop()
