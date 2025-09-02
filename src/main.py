@@ -1,14 +1,26 @@
 # main.py
-# --- GUI Implementation ---
+# Import necessary modules
 import tkinter as tk
 from tkinter import ttk
 from classes.GUIs import ManualTestingGUI, AutomatedTestsGUI
-from classes.measurements_AP import Noise
-
 
 
 def main():
+    """
+    Main function to run the GUI application.
+    """
     def create_window(title_text, parent=None, bg="#e9ecef"):
+        """
+        Create a new window.
+
+        Args:
+            title_text (str): The title of the window.
+            parent (tk.Tk, optional): The parent window. Defaults to None.
+            bg (str, optional): The background color of the window. Defaults to "#e9ecef".
+
+        Returns:
+            (tk.Toplevel, ttk.Frame): The created window and its frame.
+        """
         # Only create one root window (tk.Tk), all others are Toplevel
         if not hasattr(create_window, "root_created"):
             win = tk.Tk()
@@ -28,6 +40,9 @@ def main():
         return win, frame
 
     def setup_styles():
+        """
+        Setup custom styles for the GUI.
+        """
         style = ttk.Style()
         style.theme_use('clam')
         style.configure('TFrame', background="#ffffff")
@@ -49,10 +64,16 @@ def main():
     root, frame = create_window("Neuranics ASIC Lab Automation")
 
     def open_manual():
+        """
+        Open the manual testing window.
+        """
         manual_win = tk.Toplevel(root)
         ManualTestingGUI(manual_win)
 
     def open_automated():
+        """
+        Open the automated testing window.
+        """
         auto_win = tk.Toplevel(root)
         AutomatedTestsGUI(auto_win)
 
@@ -63,6 +84,9 @@ def main():
     btn_auto.pack(pady=10, fill='x')
 
     def close_programme():
+        """
+        Close the application.
+        """
         # Destroys all Tk windows and exits
         for window in root.winfo_toplevel().winfo_children():
             try:

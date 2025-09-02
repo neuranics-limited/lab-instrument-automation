@@ -2,9 +2,9 @@ import pyvisa
 
 instrument_addresses = {
     'power_supply': 'USB0::0x2A8D::0x1002::MY61005055::INSTR',  # Power supply USB address
-    'generator1': 'USB0::0x0957::0x2807::MY62003816::INSTR',
-    'generator2': 'USB0::0x0957::0x2807::MY62003715::INSTR',
-    'oscilloscope': 'USB0::0x2A8D::0x4704::MY65120148::INSTR',
+    'generator1': 'USB0::0x0957::0x2807::MY62003816::INSTR', # Wave generator 1 USB address
+    'generator2': 'USB0::0x0957::0x2807::MY62003715::INSTR', # Wave generator 2 USB address
+    'oscilloscope': 'USB0::0x2A8D::0x4704::MY65120148::INSTR', # Oscilloscope USB address
     'SMU': 'USB0::0x2A8D::0x9101::MY65150106::INSTR'  # SMU USB address
 }
 
@@ -12,6 +12,16 @@ instrument_addresses = {
 
 
 class SMU:
+    """
+    Class for controlling the Source Measure Unit (SMU) instrument.
+
+    Attributes:
+        rm: The resource manager for handling VISA resources.
+        smu: The specific SMU instrument resource.
+
+    Methods:
+        close: Closes the SMU instrument and the resource manager.
+    """
     def __init__(self, address):
         self.rm = pyvisa.ResourceManager()
         self.smu = self.rm.open_resource(address)
@@ -24,6 +34,20 @@ class SMU:
         self.rm.close()
 
 class SignalGenerator:
+    """
+    Class for controlling the Signal Generator instrument.
+
+    Attributes:
+        rm: The resource manager for handling VISA resources.
+        sg: The specific Signal Generator instrument resource.
+
+    Methods:
+        close: Closes the Signal Generator instrument and the resource manager.
+        sin: Configures the Signal Generator to output a sine wave.
+        square: Configures the Signal Generator to output a square wave.
+        enable_output: Enables or disables the output of the Signal Generator.
+    """
+
     def __init__(self, address):
         self.rm = pyvisa.ResourceManager()
         self.sg = self.rm.open_resource(address)
@@ -58,6 +82,17 @@ class SignalGenerator:
         self.sg.write('OUTP ON' if enable else 'OUTP OFF')
 
 class Oscilloscope:
+    """
+    Class for controlling the Oscilloscope instrument.
+
+    Attributes:
+        rm: The resource manager for handling VISA resources.
+        scope: The specific Oscilloscope instrument resource.
+
+    Methods:
+        close: Closes the Oscilloscope instrument and the resource manager.
+
+    """
     def __init__(self):
         self.rm = pyvisa.ResourceManager()
         self.scope = self.rm.open_resource(instrument_addresses['oscilloscope'])

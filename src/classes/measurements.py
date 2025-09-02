@@ -1,3 +1,4 @@
+# Import the neccessary modules
 import time
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,6 +14,17 @@ from classes.instruments import SignalGenerator, Oscilloscope
 
 
 class dual_channel():
+    """
+    A class to handle dual-channel signal generation.
+
+    Attributes:
+        sg: An instance of the SignalGenerator class.
+        type: The waveform type (e.g., 'SIN', 'SQUARE').
+        duration: Duration to output the signal in seconds.
+
+    Methods:
+        show_double: Displays the settings for the dual-channel generator.
+    """
     def __init__(self, address, type='sin', duration=10):
         self.sg = SignalGenerator(address)
         self.type = type.upper()
@@ -43,6 +55,18 @@ class dual_channel():
 
 
 class read_scope():
+    """
+    A class to handle reading waveforms from an oscilloscope.
+
+    Attributes:
+        scope: An instance of the Oscilloscope class.
+
+    Methods:
+        read_waveform: Reads the waveform from the oscilloscope.
+
+    Returns:
+        waveform: The waveform data read from the oscilloscope.
+    """
     def __init__(self, address):
         self.scope = Oscilloscope(address)
 
@@ -57,6 +81,26 @@ class TransferFunctionAnalyzer():
     """
     A class to analyze and compute transfer functions between input and output waveforms.
     This is useful for characterizing amplifier or filter responses.
+
+    Attributes:
+        sample_rate: The sample rate for audio processing.
+        input_signal: The input audio signal.
+        output_signal: The output audio signal.
+        transfer_function: The computed transfer function.
+        frequencies: The frequency bins corresponding to the transfer function.
+
+    Methods:
+        load_audio_files: Load input and output audio files.
+        set_signals: Set input and output signals directly as numpy arrays.
+        compute_transfer_function: Compute the transfer function between input and output signals.
+        get_magnitude_response: Get the magnitude response of the transfer function.
+        get_phase_response: Get the phase response of the transfer function.
+        plot_transfer_function: Plot the transfer function.
+        plot_signals_comparison: Plot input and output signals for comparison.
+        apply_transfer_function: Apply the transfer function to the input signal.
+
+    Returns:
+        Various plots and data depending on the method called.
     """
 
     def __init__(self, sample_rate: float = 44100):

@@ -1,18 +1,35 @@
+# Import all neccessary modules
+import os
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
 from datetime import datetime
+from PIL import Image, ImageTk
 import time
 import threading
 import subprocess
 from classes.instruments import SMU
 from classes.measurements import dual_channel, read_scope
 from classes.instruments import instrument_addresses
+from classes.measurements_AP import Noise, TransferFunction
 
 
 
 # --- Main Menu Modes ---
 class ManualTestingGUI:
+    """
+    GUI for manual testing mode.
+    This GUI allows users to manually control and test various instruments.
+
+    Attributes:
+        master: The main application window.
+
+    Methods:
+        open_smu: Opens the SMU control window.
+        open_sg: Opens the Signal Generator control window.
+        open_os: Opens the Oscilloscope control window.
+        open_ap: Opens the Audio Precision control window.
+    """
     def __init__(self, master):
         master.title("Manual Testing")
         master.resizable(False, False)
@@ -68,6 +85,17 @@ class ManualTestingGUI:
         btn_ap.pack(pady=10, fill='x')
 
 class AutomatedTestsGUI:
+    """
+    GUI for automated testing mode.
+    This GUI allows users to configure and run automated tests on various instruments.
+
+    Attributes:
+        master: The main application window.
+
+    Methods:
+        open_noise_vs_freq: Opens the Noise vs Frequency test window.
+        open_transfer_function: Opens the Transfer Function test window.
+    """
     def __init__(self, master):
         master.title("Automated Tests")
         master.resizable(False, False)
@@ -82,14 +110,144 @@ class AutomatedTestsGUI:
         frame.pack(padx=40, pady=40)
         label = ttk.Label(frame, text="Automated Tests Mode", font=("Segoe UI", 16, "bold"), background="#ffffff")
         label.pack(pady=(0, 20))
+
         # Add automated testing widgets here
+        def open_noise_vs_freq():
+            noise_win = tk.Toplevel(master)
+            Noise_vs_FrequencyGUI(noise_win)
+
+        def open_transfer_function():
+            tf_win = tk.Toplevel(master)
+            TransferFunctionGUI(tf_win)
 
 
+        # Add buttons for each test
+        btn_noise = ttk.Button(frame, text="Noise vs Frequency Test", style='Accent.Rounded.TButton', command=open_noise_vs_freq)
+        btn_noise.pack(pady=10, fill='x')
+
+        btn_transfer = ttk.Button(frame, text="Transfer Function Test", style='Accent.Rounded.TButton', command=open_transfer_function)
+        btn_transfer.pack(pady=10, fill='x')
+
+
+# -- Automated Testing Widgets --
+
+class Noise_vs_FrequencyGUI:
+    """
+    GUI for the Noise vs Frequency test.
+    This GUI allows users to configure and run the Noise vs Frequency test.
+
+    Attributes:
+        master: The main application window.
+
+    Methods:
+        start_noise_measurement: Starts the noise measurement process.
+    """
+    def __init__(self, master):
+        self.master = master
+        master.title("Noise vs Frequency")
+        master.configure(bg="#e9ecef")
+        master.resizable(False, False)
+        style = ttk.Style()
+        style.theme_use('clam')
+        style.configure('TFrame', background="#ffffff")
+        style.configure('TLabel', background="#ffffff", font=("Segoe UI", 12))
+        frame = ttk.Frame(master, padding=30, style='TFrame')
+        frame.pack(padx=40, pady=40)
+        label = ttk.Label(frame, text="Noise vs Frequency", font=("Segoe UI", 16, "bold"), background="#ffffff")
+        label.pack(pady=(0, 20))
+
+        img_path = os.path.join(os.path.dirname(__file__), '..', 'Diagrams', 'Noise_Measurement.png')
+        try:
+            pil_img = Image.open(img_path)
+            self.diagram = ImageTk.PhotoImage(pil_img, master=master)  # Keep reference as self.diagram
+            img_frame = ttk.Frame(frame)
+            img_frame.pack(pady=10)
+            image_label = tk.Label(frame, image=self.diagram)
+            image_label.pack(side='left', padx=(0,10))
+        except Exception as e:
+            err_label = tk.Label(frame, text=f"Could not load diagram: {e}", foreground="red", background="#ffffff")
+            err_label.pack(pady=10)
+
+        self.measure_btn = ttk.Button(frame, text="Start Noise Measurement", style='Accent.Rounded.TButton', command=self.start_noise_measurement)
+        self.measure_btn.pack(pady=10)
+
+
+    # Button to start noise measurement
+    def start_noise_measurement(self):
+        try:
+            noise = Noise()
+            noise.setup_noise_measurement()
+            freqs, noise_vals = noise.run_noise_measurement()
+            messagebox.showinfo("Measurement Complete", f"Noise measurement finished.\nFrequencies: {freqs}\nNoise: {noise_vals}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Noise measurement failed.\n{e}")
+
+class TransferFunctionGUI:
+    """
+    GUI for the Transfer Function test.
+    This GUI allows users to configure and run the Transfer Function test.
+
+    Attributes:
+        master: The main application window.
+
+    Methods:
+        start_transfer_function_measurement: Starts the transfer function measurement process.
+    """
+    def __init__(self, master):
+        self.master = master
+        master.title("Transfer Function")
+        master.configure(bg="#e9ecef")
+        master.resizable(False, False)
+        style = ttk.Style()
+        style.theme_use('clam')
+        style.configure('TFrame', background="#ffffff")
+        style.configure('TLabel', background="#ffffff", font=("Segoe UI", 12))
+        frame = ttk.Frame(master, padding=30, style='TFrame')
+        frame.pack(padx=40, pady=40)
+        label = ttk.Label(frame, text="Transfer Function", font=("Segoe UI", 16, "bold"), background="#ffffff")
+        label.pack(pady=(0, 20))
+
+        img_path = os.path.join(os.path.dirname(__file__), '..', 'Diagrams', 'Transfer_Function.png')
+        try:
+            pil_img = Image.open(img_path)
+            self.diagram = ImageTk.PhotoImage(pil_img, master=master)  # Keep reference as self.diagram
+            img_frame = ttk.Frame(frame)
+            img_frame.pack(pady=10)
+            image_label = tk.Label(frame, image=self.diagram)
+            image_label.pack(side='left', padx=(0,10))
+        except Exception as e:
+            err_label = tk.Label(frame, text=f"Could not load diagram: {e}", foreground="red", background="#ffffff")
+            err_label.pack(pady=10)
+
+        self.measure_btn = ttk.Button(frame, text="Start Transfer Function Measurement", style='Accent.Rounded.TButton', command=self.start_transfer_function_measurement)
+        self.measure_btn.pack(pady=10)
+
+
+    # Button to start transfer function measurement
+    def start_transfer_function_measurement(self):
+        try:
+            tf = TransferFunction()
+            tf.setup_transfer_function_measurement()
+            freqs, tf_vals = tf.run_transfer_function_measurement()
+            messagebox.showinfo("Measurement Complete", f"Transfer function measurement finished.\nFrequencies: {freqs}\nTransfer Function: {tf_vals}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Transfer function measurement failed.\n{e}")
 
 
 # --- Instrument Manual Control GUIs ---
 
 class SMU_GUI:
+    """
+    GUI for the SMU (Source Measure Unit) control.
+    This GUI allows users to configure and control the SMU for various measurements.
+
+    Attributes:
+        master: The main application window.
+
+    Methods:
+        turn_on: Turns on the SMU.
+        turn_off: Turns off the SMU.
+    """
     def __init__(self, master):
         self.master = master
         master.title("SMU Control")
@@ -192,6 +350,17 @@ class SMU_GUI:
         self.status.set("Output OFF.")
 
 class SignalGeneratorGUI:
+    """
+    GUI for the Signal Generator.
+    This GUI allows users to configure and control the Signal Generator for various waveforms.
+
+    Attributes:
+        master: The main application window.
+
+    Methods:
+        start_signal_generation: Starts the signal generation process.
+        stop_signal_generation: Stops the signal generation process.
+    """
     def __init__(self, master):
         self.master = master
         master.title("Signal Generator Control")
@@ -478,6 +647,16 @@ class SignalGeneratorGUI:
         self.master.after(0, lambda: self.status.set("Generators stopped."))
 
 class OscilloscopeGUI:
+    """
+    GUI for the Oscilloscope control.
+    This GUI allows users to configure and control the Oscilloscope for various measurements.
+
+    Attributes:
+        master: The main application window.
+
+    Methods:
+        read_and_save: Reads data from the oscilloscope and saves it to a file.
+    """
     def __init__(self, master):
         self.master = master
         master.title("Oscilloscope Control")
@@ -548,6 +727,16 @@ class OscilloscopeGUI:
             self.status.set(f"Error: {e}")
 
 class AudioPrecisionGUI:
+    """
+    GUI for the Audio Precision control.
+    This GUI allows users to open the APx500 software for audio analysis and testing.
+
+    Attributes:
+        master: The main application window.
+
+    Methods:
+        open_api: Opens the APx500 software.
+    """
     def __init__(self, master):
         self.master = master
         self.master.title("Audio Precision Control")
@@ -583,6 +772,8 @@ class AudioPrecisionGUI:
         btn_api = ttk.Button(frame, text="Open APx500 Software", style='Accent.Rounded.TButton', command=open_api)
         btn_api.pack(pady=10)
 
+
+
 '''
 # Debug purposes
 def initialize_instruments():
@@ -598,7 +789,6 @@ def initialize_instruments():
 
 initialize_instruments()
 '''
-
 
 '''
 class PowerSupplyGUI:
@@ -701,3 +891,13 @@ class PowerSupplyGUI:
         self.time_entry.delete(0, tk.END)
         self.status.set("Output OFF.")
 '''
+
+
+
+
+
+
+
+
+
+
