@@ -19,7 +19,7 @@ class Noise:
 
     def setup_noise_measurement(self):
         # Configure for noise measurement
-        self.APx.SignalPathSetup.InputConnector.Type = InputConnectorType.AnalogBalanced
+        self.APx.SignalPathSetup.InputConnector.Type = InputConnectorType.AnalogUnbalanced
         self.APx.SignalPathSetup.Measure = MeasurandType.Voltage
         input1 = self.APx.SignalPathSetup.InputSettings(APxInputSelection.Input1)
         input1.Channels[0].Name = "Sensor"

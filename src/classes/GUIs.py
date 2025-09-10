@@ -8,7 +8,7 @@ from PIL import Image, ImageTk
 import time
 import threading
 import subprocess
-from classes.instruments import SMU
+from classes.instruments import SMU, SignalGenerator
 from classes.measurements import dual_channel, read_scope
 from classes.instruments import instrument_addresses
 from classes.measurements_AP import Noise, TransferFunction
@@ -141,6 +141,8 @@ class Noise_vs_FrequencyGUI:
 
     Methods:
         start_noise_measurement: Starts the noise measurement process.
+        power_setup: Sets up the power source for the measurement.
+        signalgen_setup: Sets up the signal generator for the measurement.
     """
     def __init__(self, master):
         self.master = master
@@ -151,34 +153,156 @@ class Noise_vs_FrequencyGUI:
         style.theme_use('clam')
         style.configure('TFrame', background="#ffffff")
         style.configure('TLabel', background="#ffffff", font=("Segoe UI", 12))
+
+        self.smu = SMU(instrument_addresses['SMU'])
+        self.smu.smu.write_termination = '\n'
+
+        self.signalgen = SignalGenerator(instrument_addresses['generator1'])
+        self.signalgen.sg.write_termination = '\n'
+
+        self.clock = SignalGenerator(instrument_addresses['generator2'])
+        self.clock.sg.write_termination = '\n'
+
         frame = ttk.Frame(master, padding=30, style='TFrame')
         frame.pack(padx=40, pady=40)
         label = ttk.Label(frame, text="Noise vs Frequency", font=("Segoe UI", 16, "bold"), background="#ffffff")
         label.pack(pady=(0, 20))
 
+        # Horizontal container for the input and image
+        horiz_frame = ttk.Frame(frame)
+        horiz_frame.pack(pady=10, fill='x')
+
+        # Input frame (voltage, current, power setup button)
+        input_row = ttk.Frame(frame)
+        input_row.pack(pady=(0,10), anchor='w')
+
+        # Supply Voltage
+        voltage_label = ttk.Label(input_row, text="Supply Voltage (V):")
+        voltage_label.pack(side='left', padx=(0, 5))
+        self.voltage_entry = ttk.Entry(input_row, font=("Segoe UI", 12), width=8)
+        self.voltage_entry.pack(side='left', padx=(0, 15))
+
+        # Supply Current
+        current_label = ttk.Label(input_row, text="Supply Current limit (µA):")
+        current_label.pack(side='left', padx=(0, 5))
+        self.current_entry = ttk.Entry(input_row, font=("Segoe UI", 12), width=8)
+        self.current_entry.pack(side='left', padx=(0, 15))
+
+        self.powersetup_btn = ttk.Button(input_row, text="Start power source", style='Accent.Rounded.TButton', command=self.power_setup)
+        self.powersetup_btn.pack(side='left', padx=(0, 5))
+
+        img_frame = ttk.Frame(horiz_frame)
+        img_frame.pack(side='left', anchor='n')
+
         img_path = os.path.join(os.path.dirname(__file__), '..', 'Diagrams', 'Noise_Measurement.png')
         try:
             pil_img = Image.open(img_path)
+            w, h = pil_img.size
+            new_size = (int(w*0.8), int(h*0.8)) # Scaled to 80%
+            pil_img = pil_img.resize(new_size, Image.LANCZOS)
             self.diagram = ImageTk.PhotoImage(pil_img, master=master)  # Keep reference as self.diagram
-            img_frame = ttk.Frame(frame)
-            img_frame.pack(pady=10)
-            image_label = tk.Label(frame, image=self.diagram)
-            image_label.pack(side='left', padx=(0,10))
+            image_label = tk.Label(img_frame, image=self.diagram)
+            image_label.pack()
         except Exception as e:
             err_label = tk.Label(frame, text=f"Could not load diagram: {e}", foreground="red", background="#ffffff")
             err_label.pack(pady=10)
 
-        self.measure_btn = ttk.Button(frame, text="Start Noise Measurement", style='Accent.Rounded.TButton', command=self.start_noise_measurement)
+        dc_frame =ttk.Frame(horiz_frame)
+        dc_frame.pack(side='left', anchor='n', padx=(0, 20))
+
+        # DC input offset
+        dc_offset_label = ttk.Label(dc_frame, text="DC Input Offset (mV):")
+        dc_offset_label.pack(side='left', padx=(0, 5))
+        self.dc_offset_entry = ttk.Entry(dc_frame, font=("Segoe UI", 12), width=14)
+        self.dc_offset_entry.pack(side='left', padx=(0, 15))
+
+        chopping_label = ttk.Label(dc_frame, text="Chopping mode:")
+        chopping_label.pack(pady=7, anchor='w')
+        self.chopping_mode = tk.StringVar(value='Chopping')
+        phase_mode_menu = ttk.Combobox(dc_frame, textvariable=self.chopping_mode, values=['Chopping', 'No Chopping'], font=("Segoe UI", 12), width=12, state='readonly')
+        phase_mode_menu.pack(padx=10, pady=7)
+
+        self.signal_btn = ttk.Button(dc_frame, text='Start Signal Generator', style='Accent.Rounded.TButton', command=self.signalgen_setup)
+        self.signal_btn.pack(side='left', padx=(0, 10))
+
+        self.measure_btn = ttk.Button(img_frame, text="Start Noise Measurement", style='Accent.Rounded.TButton', command=self.start_noise_measurement)
         self.measure_btn.pack(pady=10)
 
+        self.reset_btn = ttk.Button(frame, text="Reset Keysight instruments", style='Rounded.TButton', command=self.reset_keysight)
+        self.reset_btn.pack(pady=10)
 
-    # Button to start noise measurement
+    # Method to set up the power source
+    def power_setup(self):
+        try:
+            voltage = float(self.voltage_entry.get())
+            current = float(self.current_entry.get())/1e6
+            if voltage <= 0 or current <= 0:
+                raise ValueError
+        except ValueError:
+            messagebox.showerror("Input Error", "Please enter positive numbers for voltage and current.")
+            return
+
+        self.smu.smu.write(':SOUR:FUNC:MODE VOLT')
+        self.smu.smu.write('VOLT:MODE FIXED')
+        self.smu.smu.write('CURR:MODE FIXED')
+        # Increase the compliance limit for a short amount of time to make sure the capacitor charges fully and the machine does not enter constant current mode
+        self.smu.smu.write(f':SENS:CURR:PROT {1.5*current}')
+        self.smu.smu.write(f'VOLT {voltage}')
+        self.smu.smu.write('OUTP ON')
+        time.sleep(0.5)
+        # Return the machine to its original compliance limit to not break the DUT
+        self.smu.smu.write(f':SENS:CURR:PROT {current}')
+        self.smu.smu.write(f'VOLT {voltage}')
+        self.smu.smu.write('OUTP ON')
+
+    def signalgen_setup(self):
+        offset = float(self.dc_offset_entry.get()) / 1000
+
+        if self.chopping_mode.get() == 'Chopping':
+            for num in (1,2):
+                self.clock.sg.write(f'SOUR{num}:FUNC SQUARE')
+                self.clock.sg.write(f'SOUR{num}:FREQ 4000')
+                self.clock.sg.write(f'SOUR{num}:VOLT:1.8')
+                self.clock.sg.write(f'SOUR{num}:VOLT:OFFS 0.9')
+            self.clock.sg.write('SOUR1:PHAS 0')
+            self.clock.sg.write('SOUR2:PHAS 180')
+            self.clock.sg.write('PHAS:SYNC')
+            for num in (1,2):
+                self.clock.sg.write(f'SOUR{num}:OUTP ON')
+        if self.chopping_mode.get() == 'No Chopping':
+            for num in (1,2):
+                self.clock.sg.write(f'SOUR{num}:FUNC DC')
+            self.clock.sg.write('SOUR1:VOLT:OFFS 0')
+            self.clock.sg.write('SOUR2:VOLT:OFFS 1.8')
+            for num in (1,2):
+                self.clock.sg.write(f'SOUR{num}:OUTP ON')
+
+        for num in (1, 2):
+            self.signalgen.sg.write(f'SOUR{num}:FUNC DC')
+            self.signalgen.sg.write(f'SOUR{num}:VOLT:OFFS {offset}')
+            self.signalgen.sg.write(f'SOUR{num}:OUTP ON')
+
+    def reset_keysight(self):
+        self.signalgen.sg.write('OUTP OFF')
+        self.signalgen.sg.write('*RST')
+        self.signalgen.sg.write('*CLS')
+        self.smu.smu.write('OUTP OFF')
+        self.smu.smu.write('*RST')
+        self.smu.smu.write('*CLS')
+
+    # Method to start noise measurement
     def start_noise_measurement(self):
         try:
             noise = Noise()
             noise.setup_noise_measurement()
             freqs, noise_vals = noise.run_noise_measurement()
             messagebox.showinfo("Measurement Complete", f"Noise measurement finished.\nFrequencies: {freqs}\nNoise: {noise_vals}")
+            self.signalgen.sg.write('OUTP OFF')
+            self.smu.smu.write('OUTP OFF')
+            self.smu.smu.write('VOLT 0')
+            self.smu.smu.write(':SENS:CURR:PROT 0')
+            self.voltage_entry.delete(0, tk.END)
+            self.current_entry.delete(0, tk.END)
         except Exception as e:
             messagebox.showerror("Error", f"Noise measurement failed.\n{e}")
 
@@ -323,6 +447,12 @@ class SMU_GUI:
         self.smu.smu.write(':SOUR:FUNC:MODE VOLT')
         self.smu.smu.write('VOLT:MODE FIXED')
         self.smu.smu.write('CURR:MODE FIXED')
+        # Increase the compliance limit for a short amount of time to make sure the capacitor charges fully and the machine does not enter constant current mode
+        self.smu.smu.write(f':SENS:CURR:PROT {1.5*current}')
+        self.smu.smu.write(f'VOLT {voltage}')
+        self.smu.smu.write('OUTP ON')
+        time.sleep(0.5)
+        # Return the machine to its original compliance limit to not break the DUT
         self.smu.smu.write(f':SENS:CURR:PROT {current}')
         self.smu.smu.write(f'VOLT {voltage}')
         self.smu.smu.write('OUTP ON')
@@ -343,7 +473,7 @@ class SMU_GUI:
         self._countdown_active = False
         self.smu.smu.write('OUTP OFF')
         self.smu.smu.write('VOLT 0')
-        self.smu.smu.write('CURR 0')
+        self.smu.smu.write(':SENS:CURR:PROT 0')
         self.voltage_entry.delete(0, tk.END)
         self.current_entry.delete(0, tk.END)
         self.time_entry.delete(0, tk.END)
@@ -437,10 +567,11 @@ class SignalGeneratorGUI:
         clock_frame = ttk.LabelFrame(h_frame, text="Clock Generator", padding=12, style='TFrame')
         clock_frame.grid(row=0, column=1, sticky='n', padx=(0, 0), pady=0)
 
-        # Enable Clock Generator checkbox inside clock_frame
-        self.use_clock = tk.BooleanVar(value=True)
-        clock_check = ttk.Checkbutton(clock_frame, text="Enable Clock Generator", variable=self.use_clock, command=self._toggle_clock_fields)
-        clock_check.grid(row=0, column=0, columnspan=2, pady=(0, 10), sticky='w')
+        self.clock_mode = tk.StringVar(value="none")
+        ttk.Label(clock_frame, text="Clock Mode:").grid(row=0, column=0, sticky='e', padx=10, pady=7)
+        ttk.Radiobutton(clock_frame, text="Use Clock", variable=self.clock_mode, value="clock").grid(row=0, column=1, sticky='w')
+        ttk.Radiobutton(clock_frame, text="Use DC Clock", variable=self.clock_mode, value="dc_clock").grid(row=0, column=2, sticky='w')
+        ttk.Radiobutton(clock_frame, text="None", variable=self.clock_mode, value="none").grid(row=0, column=3, sticky='w')
 
         ttk.Label(clock_frame, text="Clock Frequency (Hz):").grid(row=1, column=0, sticky='e', padx=10, pady=7)
         self.clock_frequency_entry = ttk.Entry(clock_frame, font=("Segoe UI", 12), width=14)
@@ -453,13 +584,6 @@ class SignalGeneratorGUI:
         ttk.Label(clock_frame, text="Clock Offset (mV):").grid(row=3, column=0, sticky='e', padx=10, pady=7)
         self.clock_offset_entry = ttk.Entry(clock_frame, font=("Segoe UI", 12), width=14)
         self.clock_offset_entry.grid(row=3, column=1, padx=10, pady=7)
-
-        # No clock type selection needed; always square
-        self.clock_fields = [
-            self.clock_frequency_entry,
-            self.clock_amplitude_entry,
-            self.clock_offset_entry
-        ]
 
         # Buttons (below the horizontal frame)
         self.start_button = ttk.Button(frame, text="Start", command=self.start_generators, style='Accent.Rounded.TButton')
@@ -476,17 +600,11 @@ class SignalGeneratorGUI:
         self.input_sg = None
         self.clock_sg = None
 
-        # Set initial state of clock fields
-        self._toggle_clock_fields()
 
         # Store references to signal fields for toggling
         self.signal_fields = [self.frequency_entry, self.offset_entry, phase_mode_menu]
         input_type_menu.bind('<<ComboboxSelected>>', lambda e: self._toggle_signal_fields())
 
-    def _toggle_clock_fields(self):
-        state = 'normal' if self.use_clock.get() else 'disabled'
-        for widget in self.clock_fields:
-            widget.config(state=state)
 
     def _toggle_signal_fields(self):
         # For DC, only Peak-to-Peak Voltage is disabled; offset remains enabled
@@ -525,6 +643,8 @@ class SignalGeneratorGUI:
                 clock_offset = float(self.clock_offset_entry.get())
                 if clock_frequency <= 0:
                     raise ValueError
+            else:
+                clock_offset = float(self.clock_offset_entry.get())
         except ValueError:
             self.status.set("Enter valid positive numbers for all fields.")
             return
@@ -572,7 +692,7 @@ class SignalGeneratorGUI:
         t1 = threading.Thread(target=self.input_sg.show_double)
         threads.append(t1)
 
-        if self.use_clock.get():
+        if self.clock_mode.get() == "clock":
             # Clock type is always 'square'
             self.clock_sg = dual_channel(instrument_addresses['generator2'], type='square', duration=duration)
             def show_double_gui_clock(self):
@@ -597,8 +717,28 @@ class SignalGeneratorGUI:
             self.clock_sg.show_double = show_double_gui_clock.__get__(self.clock_sg)
             t2 = threading.Thread(target=self.clock_sg.show_double)
             threads.append(t2)
+        elif self.clock_mode.get() == "dc_clock":
+            # DC Clock type is always 'DC'
+            self.clock_sg = dual_channel(instrument_addresses['generator2'], type='DC', duration=duration)
+            def show_double_gui_dc_clock(self):
+                type_ = self.type
+                for num in [1, 2]:
+                    self.sg.sg.write(f'SOUR{num}:FUNC {type_}')
+                    self.sg.sg.write(f'SOUR{num}:VOLT:OFFS {clock_offset/1000}')
+                for num in [1, 2]:
+                    self.sg.sg.write(f'OUTP{num} ON')
+                time.sleep(self.duration)
+                # Only send OFF if not stopped
+                if not getattr(self, '_stop_generators', False):
+                    for num in [1, 2]:
+                        self.sg.sg.write(f'OUTP{num} OFF')
+            self.clock_sg._stop_generators = False
+            self.clock_sg.show_double = show_double_gui_dc_clock.__get__(self.clock_sg)
+            t2 = threading.Thread(target=self.clock_sg.show_double)
+            threads.append(t2)
         else:
             self.clock_sg = None
+
 
         self._countdown_time = int(duration)
         self._countdown_active = True
