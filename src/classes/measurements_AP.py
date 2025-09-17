@@ -1,6 +1,7 @@
-import clr
 import time
-
+import pythonnet
+pythonnet.load("netfx")  # Use .NET Framework instead of .NET Core
+import clr
 
 # Add a reference to the APx API
 clr.AddReference(r"C:\Program Files\Audio Precision\APx500 9.1\API\AudioPrecision.API3.dll")
@@ -53,7 +54,7 @@ class Noise:
         return filtered_freqs, filtered_noise
 
 
-class TransferFunction:
+class TransferFunction: ######### Working in progress #######################################################
 
     def __init__(self):
         self.APx = APx500_Application()
@@ -71,4 +72,4 @@ class TransferFunction:
         # Add and configure a transfer function measurement
         self.APx.AddMeasurement("Signal Path1", MeasurementType.TransferFunction)
         self.APx.TransferFunction.Inputs[0].Channel = input1.Channels[0]
-        self.APx.TransferFunction.Outputs[0].Channel = output1.Channels[0]
+        #self.APx.TransferFunction.Outputs[0].Channel = output1.Channels[0]
