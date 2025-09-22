@@ -225,6 +225,7 @@ lab-instrument-automation/
 ### **Future Enhancements:**
 - 📋 Additional automated test protocols
 - 📋 Data logging and report generation
+- 📋 Ability to control the temperature chamber from the program
 - 📋 Remote instrument control capabilities
 
 ## Troubleshooting
