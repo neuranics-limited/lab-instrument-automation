@@ -226,6 +226,7 @@ lab-instrument-automation/
 - 📋 Additional automated test protocols
 - 📋 Data logging and report generation
 - 📋 Ability to control the temperature chamber from the program
+- 📋 Package into an executable using pyinstaller
 - 📋 Remote instrument control capabilities
 
 ## Troubleshooting
