@@ -205,7 +205,7 @@ class Noise_vs_FrequencyGUI:
             err_label = tk.Label(frame, text=f"Could not load diagram: {e}", foreground="red", background="#ffffff")
             err_label.pack(pady=10)
 
-        
+
 
         dc_frame = ttk.Frame(frame)
         dc_frame.pack(side='left', anchor='n', padx=(0,20))
@@ -239,7 +239,7 @@ class Noise_vs_FrequencyGUI:
         except ValueError:
             messagebox.showerror("Input Error", "Please enter valid numbers for voltage and current.")
             return
-        
+
         self.smu.smu.write(':SOUR:FUNC:MODE VOLT')
         self.smu.smu.write('VOLT:MODE FIXED')
         self.smu.smu.write('CURR:MODE FIXED')
@@ -260,7 +260,7 @@ class Noise_vs_FrequencyGUI:
             noise.setup_noise_measurement()
             freqs, noise_vals = noise.run_noise_measurement()
             messagebox.showinfo("Measurement Complete", f"Noise measurement finished.\nFrequencies: {freqs}\nNoise: {noise_vals}")
-        
+
             for num in [1, 2]:
                 self.signalgen.sg.write(f'SOUR{num}:OUTP OFF')
                 self.clock.sg.write(f'SOUR{num}:OUTP OFF')

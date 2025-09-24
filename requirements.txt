@@ -1,14 +1,15 @@
-numpy
-matplotlib
-pyvisa
-pythonnet
-scipy
-threading
-tkinter
-pillow
+numpy # For numerical operations
+matplotlib # For plotting and visualization
+pyvisa # For Keysight instrument control
+pythonnet # For APx555 control
+scipy # For signal processing
+threading # For concurrent execution
+subprocess # For running external processes
+tkinter # For GUI
+pillow # For image processing
 
 # Note: pyvisa requires a VISA backend (e.g., NI-VISA or Keysight IO Libraries Suite) to be installed separately.
-# For a GUI, install Keysight Connection Expert.
+# For a GUI, install NI-MAX Expert.
 # APx555 does not operate on VISA, so pythonnet is needed to remotely control that instrument.
-# Furthermore .NET SDK has to be installed aswell
+# Furthermore .NET SDK has to be installed aswell.
 # To generate auto stubs, .NET 6.0 is also needed since .NET is not backwards compatible
